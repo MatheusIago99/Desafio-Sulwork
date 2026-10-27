@@ -3,8 +3,11 @@ import { api } from '../api/client';
 import type { Participante, ParticipanteInput } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { AlergenoChips } from '../components/Alergenos';
+import { IconeBusca, IconeMais } from '../components/Icones';
+import { Modal } from '../components/Modal';
 import { ParticipanteForm } from '../components/ParticipanteForm';
 import { formatarCpf } from '../utils/format';
+import { iniciais } from '../utils/iniciais';
 
 export function ParticipantesPage() {
   const [participantes, setParticipantes] = useState<Participante[] | null>(null);
@@ -46,34 +49,42 @@ export function ParticipantesPage() {
   return (
     <div className="pagina">
       <div className="pagina-cabecalho">
-        <h1>Participantes</h1>
-        {editando === null && (
-          <button type="button" className="botao botao-primario" onClick={() => setEditando('novo')}>
-            Novo participante
-          </button>
-        )}
+        <div>
+          <h1>Participantes</h1>
+          <p className="pagina-subtitulo">Colaboradores cadastrados e suas restrições alimentares.</p>
+        </div>
+        <button type="button" className="botao botao-primario" onClick={() => setEditando('novo')}>
+          <IconeMais /> Novo participante
+        </button>
       </div>
 
       {editando !== null && (
-        <section className="cartao">
-          <h2>{editando === 'novo' ? 'Novo participante' : `Editar ${editando.nome}`}</h2>
+        <Modal
+          titulo={editando === 'novo' ? 'Novo participante' : `Editar ${editando.nome}`}
+          onFechar={() => setEditando(null)}
+          largo
+        >
           <ParticipanteForm
             key={editando === 'novo' ? 'novo' : editando.id}
             inicial={editando === 'novo' ? undefined : editando}
             onSalvar={salvar}
             onCancelar={() => setEditando(null)}
           />
-        </section>
+        </Modal>
       )}
 
-      <input
-        type="search"
-        className="busca"
-        placeholder="Buscar por nome ou CPF"
-        aria-label="Buscar participantes"
-        value={busca}
-        onChange={(e) => setBusca(e.target.value)}
-      />
+      <div className="barra-filtros">
+        <label className="campo-busca">
+          <IconeBusca />
+          <input
+            type="search"
+            placeholder="Buscar por nome ou CPF"
+            aria-label="Buscar participantes"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </label>
+      </div>
 
       {erro && (
         <Alerta tipo="erro" onFechar={() => setErro(null)}>
@@ -96,7 +107,14 @@ export function ParticipantesPage() {
             <tbody>
               {participantes.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.nome}</td>
+                  <td>
+                    <span className="pessoa">
+                      <span className="avatar avatar-pequeno" aria-hidden="true">
+                        {iniciais(p.nome)}
+                      </span>
+                      <strong>{p.nome}</strong>
+                    </span>
+                  </td>
                   <td className="nowrap">{formatarCpf(p.cpf)}</td>
                   <td>
                     <AlergenoChips alergenos={p.restricoes} vazio={p.observacoesAlimentares ? '' : 'Nenhuma'} />

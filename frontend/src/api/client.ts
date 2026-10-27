@@ -2,6 +2,7 @@ import type {
   Categoria,
   Cobertura,
   Contribuicao,
+  Dashboard,
   Evento,
   EventoInput,
   Inscricao,
@@ -71,6 +72,7 @@ const patch = <T>(path: string, body: unknown) => request<T>('PATCH', path, body
 const del = (path: string) => request<void>('DELETE', path);
 
 export const api = {
+  dashboard: () => get<Dashboard>('/dashboard'),
   eventos: {
     listar: (status?: StatusEvento) => get<Evento[]>(`/eventos${status ? `?status=${status}` : ''}`),
     buscar: (id: number) => get<Evento>(`/eventos/${id}`),

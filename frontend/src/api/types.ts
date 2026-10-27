@@ -144,6 +144,25 @@ export interface ResumoRestricoes {
   }[];
 }
 
+export interface ProximoEvento {
+  evento: Evento;
+  inscritos: number;
+  percentualCobertura: number;
+  obrigatoriosPendentes: number;
+  pronto: boolean;
+}
+
+export interface Dashboard {
+  eventosAbertos: number;
+  eventosEmOrganizacao: number;
+  participantesCadastrados: number;
+  inscricoesEmEventosAbertos: number;
+  coberturaMedia: number | null;
+  obrigatoriosPendentes: number;
+  eventosPorTipo: { tipo: TipoEvento; quantidade: number }[];
+  proximosEventos: ProximoEvento[];
+}
+
 export type Prioridade = 'ALTA' | 'MEDIA' | 'BAIXA';
 
 export interface ItemPendente {

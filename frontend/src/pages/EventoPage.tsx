@@ -5,6 +5,7 @@ import type { EventoInput, ItemPendente, StatusEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { CoberturaResumo } from '../components/CoberturaResumo';
 import { EventoForm } from '../components/EventoForm';
+import { Modal } from '../components/Modal';
 import { PendenciasLista } from '../components/PendenciasLista';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
@@ -97,7 +98,7 @@ export function EventoPage() {
 
   const excluir = async () => {
     if (!confirm('Excluir este rascunho?')) return;
-    if (await executar(() => api.eventos.excluir(evento.id))) navigate('/');
+    if (await executar(() => api.eventos.excluir(evento.id))) navigate('/eventos');
   };
 
   const assumir = async (item: ItemPendente, quantidade?: number) => {
@@ -110,8 +111,8 @@ export function EventoPage() {
 
   return (
     <div className="pagina">
-      <Link to="/" className="voltar">
-        ← Eventos
+      <Link to="/eventos" className="voltar">
+        ← Voltar para a lista
       </Link>
 
       <header className="evento-cabecalho">
@@ -154,10 +155,9 @@ export function EventoPage() {
       </header>
 
       {editando && (
-        <section className="cartao">
-          <h2>Editar evento</h2>
+        <Modal titulo="Editar evento" onFechar={() => setEditando(false)} largo>
           <EventoForm inicial={evento} onSalvar={salvarEdicao} onCancelar={() => setEditando(false)} />
-        </section>
+        </Modal>
       )}
 
       <AvisoJanela dados={dados} />
