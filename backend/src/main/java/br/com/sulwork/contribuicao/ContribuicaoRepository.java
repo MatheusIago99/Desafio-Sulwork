@@ -3,6 +3,7 @@ package br.com.sulwork.contribuicao;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,6 +28,9 @@ public interface ContribuicaoRepository extends JpaRepository<Contribuicao, Long
             where c.id = :id and i.evento.id = :eventoId
             """)
     Optional<Contribuicao> buscarNoEvento(@Param("id") Long id, @Param("eventoId") Long eventoId);
+
+    @EntityGraph(attributePaths = {"item", "participante"})
+    Optional<Contribuicao> findByItemIdAndParticipanteId(Long itemId, Long participanteId);
 
     boolean existsByItemIdAndParticipanteId(Long itemId, Long participanteId);
 

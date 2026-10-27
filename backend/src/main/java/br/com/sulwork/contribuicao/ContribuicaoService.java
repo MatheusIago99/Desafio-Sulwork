@@ -55,9 +55,7 @@ public class ContribuicaoService {
         Evento evento = eventoService.buscar(eventoId);
         evento.garantirJanelaDeAlteracoes(agora);
 
-        Inscricao inscricao = inscricaoRepository.findByEventoIdAndParticipanteId(eventoId, req.participanteId())
-                .orElseThrow(() -> new RegraNegocioException(
-                        "O participante precisa estar inscrito no evento para contribuir."));
+        Inscricao inscricao = buscarInscricao(eventoId, req.participanteId());
         Item item = travarItem(eventoId, req.itemId());
 
         if (contribuicaoRepository.existsByItemIdAndParticipanteId(item.getId(), req.participanteId())) {
@@ -68,6 +66,35 @@ public class ContribuicaoService {
 
         return contribuicaoRepository.save(
                 new Contribuicao(item, inscricao.getParticipante(), req.quantidade(), agora));
+    }
+
+    /**
+     * Ação "eu levo" da lista "O que falta?": o participante assume a quantidade informada
+     * (ou tudo o que falta, se nenhuma for informada). Se ele já contribui com o item, a
+     * quantidade é somada à contribuição existente em vez de gerar um conflito.
+     */
+    @Transactional
+    public Contribuicao assumir(Long eventoId, Long itemId, Long participanteId, Integer quantidade) {
+        LocalDateTime agora = eventoService.agora();
+        eventoService.buscar(eventoId).garantirJanelaDeAlteracoes(agora);
+        Inscricao inscricao = buscarInscricao(eventoId, participanteId);
+        Item item = travarItem(eventoId, itemId);
+
+        int jaContribuido = contribuicaoRepository.somarPorItem(itemId);
+        int faltante = item.getQuantidadeNecessaria() - jaContribuido;
+        if (faltante <= 0) {
+            throw new RegraNegocioException("O item \"" + item.getNome() + "\" já está completo.");
+        }
+        int assumida = quantidade == null ? faltante : quantidade;
+        garantirLimite(item, jaContribuido, assumida);
+
+        return contribuicaoRepository.findByItemIdAndParticipanteId(itemId, participanteId)
+                .map(existente -> {
+                    existente.alterarQuantidade(existente.getQuantidade() + assumida, agora);
+                    return existente;
+                })
+                .orElseGet(() -> contribuicaoRepository.save(
+                        new Contribuicao(item, inscricao.getParticipante(), assumida, agora)));
     }
 
     @Transactional
@@ -93,6 +120,12 @@ public class ContribuicaoService {
     private Contribuicao buscar(Long eventoId, Long contribuicaoId) {
         return contribuicaoRepository.buscarNoEvento(contribuicaoId, eventoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Contribuição", contribuicaoId));
+    }
+
+    private Inscricao buscarInscricao(Long eventoId, Long participanteId) {
+        return inscricaoRepository.findByEventoIdAndParticipanteId(eventoId, participanteId)
+                .orElseThrow(() -> new RegraNegocioException(
+                        "O participante precisa estar inscrito no evento para contribuir."));
     }
 
     private Item travarItem(Long eventoId, Long itemId) {
