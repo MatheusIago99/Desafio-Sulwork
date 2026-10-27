@@ -38,6 +38,30 @@ public final class Api {
                 """.formatted(nome));
     }
 
+    public static long criarCategoria(MockMvc mvc, long eventoId, String nome, Integer meta) throws Exception {
+        return criar(mvc, "/api/eventos/" + eventoId + "/categorias", """
+                {"nome": "%s", "meta": %s}
+                """.formatted(nome, meta));
+    }
+
+    public static long criarItem(MockMvc mvc, long eventoId, long categoriaId, String nome, int quantidade,
+                                 boolean obrigatorio, String... alergenos) throws Exception {
+        String lista = alergenos.length == 0 ? "" : "\"" + String.join("\",\"", alergenos) + "\"";
+        return criar(mvc, "/api/eventos/" + eventoId + "/itens", """
+                {"nome": "%s", "categoriaId": %d, "quantidadeNecessaria": %d, "obrigatorio": %b,
+                 "alergenos": [%s]}
+                """.formatted(nome, categoriaId, quantidade, obrigatorio, lista));
+    }
+
+    /** Cria um evento já ABERTO com uma categoria e um item, pronto para receber inscrições. */
+    public static long criarEventoAberto(MockMvc mvc, String nome) throws Exception {
+        long evento = criarEvento(mvc, nome);
+        long categoria = criarCategoria(mvc, evento, "Geral", null);
+        criarItem(mvc, evento, categoria, "Item padrão", 1, false);
+        alterarStatus(mvc, evento, "ABERTO");
+        return evento;
+    }
+
     public static void alterarStatus(MockMvc mvc, long eventoId, String novoStatus) throws Exception {
         patchJson(mvc, "/api/eventos/" + eventoId + "/status", "{\"status\": \"" + novoStatus + "\"}")
                 .andExpect(status().isOk());

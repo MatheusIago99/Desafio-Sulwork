@@ -1,7 +1,10 @@
 package br.com.sulwork.participante;
 
 import static br.com.sulwork.support.Api.alterarStatus;
+import static br.com.sulwork.support.Api.criarCategoria;
 import static br.com.sulwork.support.Api.criarEvento;
+import static br.com.sulwork.support.Api.criarEventoAberto;
+import static br.com.sulwork.support.Api.criarItem;
 import static br.com.sulwork.support.Api.criarParticipante;
 import static br.com.sulwork.support.Api.inscrever;
 import static br.com.sulwork.support.Api.postJson;
@@ -50,8 +53,7 @@ class ParticipanteIT extends IntegrationTest {
 
     @Test
     void naoDeveInscreverDuasVezesNoMesmoEvento() throws Exception {
-        long evento = criarEvento(mockMvc, "Café");
-        alterarStatus(mockMvc, evento, "ABERTO");
+        long evento = criarEventoAberto(mockMvc, "Café");
         long ana = criarParticipante(mockMvc, "Ana", "52998224725");
 
         inscrever(mockMvc, evento, ana);
@@ -62,10 +64,8 @@ class ParticipanteIT extends IntegrationTest {
 
     @Test
     void mesmoParticipantePodeParticiparDeVariosEventos() throws Exception {
-        long cafe = criarEvento(mockMvc, "Café");
-        long almoco = criarEvento(mockMvc, "Almoço");
-        alterarStatus(mockMvc, cafe, "ABERTO");
-        alterarStatus(mockMvc, almoco, "ABERTO");
+        long cafe = criarEventoAberto(mockMvc, "Café");
+        long almoco = criarEventoAberto(mockMvc, "Almoço");
         long ana = criarParticipante(mockMvc, "Ana", "52998224725");
 
         inscrever(mockMvc, cafe, ana);
@@ -79,6 +79,8 @@ class ParticipanteIT extends IntegrationTest {
     @Test
     void naoDeveInscreverEmEventoEmRascunhoOuAposOPrazo() throws Exception {
         long evento = criarEvento(mockMvc, "Café");
+        long categoria = criarCategoria(mockMvc, evento, "Geral", null);
+        criarItem(mockMvc, evento, categoria, "Pão", 10, true);
         long ana = criarParticipante(mockMvc, "Ana", "52998224725");
 
         postJson(mockMvc, "/api/eventos/" + evento + "/inscricoes", "{\"participanteId\": " + ana + "}")
@@ -93,8 +95,7 @@ class ParticipanteIT extends IntegrationTest {
 
     @Test
     void naoDeveExcluirParticipanteInscrito() throws Exception {
-        long evento = criarEvento(mockMvc, "Café");
-        alterarStatus(mockMvc, evento, "ABERTO");
+        long evento = criarEventoAberto(mockMvc, "Café");
         long ana = criarParticipante(mockMvc, "Ana", "52998224725");
         inscrever(mockMvc, evento, ana);
 
