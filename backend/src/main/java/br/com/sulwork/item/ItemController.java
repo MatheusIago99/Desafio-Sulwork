@@ -1,6 +1,7 @@
 package br.com.sulwork.item;
 
 import java.util.List;
+import java.util.Map;
 
 import br.com.sulwork.item.dto.ItemRequest;
 import br.com.sulwork.item.dto.ItemResponse;
@@ -32,21 +33,26 @@ public class ItemController {
     @GetMapping
     @Operation(summary = "Lista os itens do evento, ordenados por categoria")
     public List<ItemResponse> listar(@PathVariable Long eventoId) {
-        return itemService.listar(eventoId).stream().map(ItemResponse::de).toList();
+        List<Item> itens = itemService.listar(eventoId);
+        Map<Long, Integer> contribuido = itemService.contribuidoPorItem(eventoId);
+        return itens.stream()
+                .map(item -> ItemResponse.de(item, contribuido.getOrDefault(item.getId(), 0)))
+                .toList();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cria um item com quantidade necessária, obrigatoriedade e alérgenos")
     public ItemResponse criar(@PathVariable Long eventoId, @Valid @RequestBody ItemRequest request) {
-        return ItemResponse.de(itemService.criar(eventoId, request));
+        return ItemResponse.de(itemService.criar(eventoId, request), 0);
     }
 
     @PutMapping("/{itemId}")
     @Operation(summary = "Atualiza um item")
     public ItemResponse atualizar(@PathVariable Long eventoId, @PathVariable Long itemId,
                                   @Valid @RequestBody ItemRequest request) {
-        return ItemResponse.de(itemService.atualizar(eventoId, itemId, request));
+        Item item = itemService.atualizar(eventoId, itemId, request);
+        return ItemResponse.de(item, itemService.contribuidoPorItem(eventoId).getOrDefault(itemId, 0));
     }
 
     @DeleteMapping("/{itemId}")

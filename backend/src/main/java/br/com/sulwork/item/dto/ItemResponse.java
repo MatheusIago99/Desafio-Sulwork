@@ -13,11 +13,13 @@ public record ItemResponse(
         int quantidadeNecessaria,
         String unidade,
         boolean obrigatorio,
-        Set<Alergeno> alergenos) {
+        Set<Alergeno> alergenos,
+        int quantidadeContribuida,
+        int quantidadeFaltante) {
 
-    public static ItemResponse de(Item item) {
+    public static ItemResponse de(Item item, int contribuido) {
         return new ItemResponse(item.getId(), item.getNome(), CategoriaResponse.de(item.getCategoria()),
                 item.getQuantidadeNecessaria(), item.getUnidade(), item.isObrigatorio(),
-                new TreeSet<>(item.getAlergenos()));
+                new TreeSet<>(item.getAlergenos()), contribuido, item.getQuantidadeNecessaria() - contribuido);
     }
 }

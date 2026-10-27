@@ -4,6 +4,7 @@ import java.util.List;
 
 import br.com.sulwork.common.exception.ConflitoException;
 import br.com.sulwork.common.exception.RecursoNaoEncontradoException;
+import br.com.sulwork.contribuicao.ContribuicaoRepository;
 import br.com.sulwork.evento.Evento;
 import br.com.sulwork.evento.EventoService;
 import br.com.sulwork.participante.Participante;
@@ -15,12 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class InscricaoService {
 
     private final InscricaoRepository inscricaoRepository;
+    private final ContribuicaoRepository contribuicaoRepository;
     private final EventoService eventoService;
     private final ParticipanteService participanteService;
 
-    public InscricaoService(InscricaoRepository inscricaoRepository, EventoService eventoService,
-                            ParticipanteService participanteService) {
+    public InscricaoService(InscricaoRepository inscricaoRepository, ContribuicaoRepository contribuicaoRepository,
+                            EventoService eventoService, ParticipanteService participanteService) {
         this.inscricaoRepository = inscricaoRepository;
+        this.contribuicaoRepository = contribuicaoRepository;
         this.eventoService = eventoService;
         this.participanteService = participanteService;
     }
@@ -43,11 +46,13 @@ public class InscricaoService {
         return inscricaoRepository.save(new Inscricao(evento, participante, eventoService.agora()));
     }
 
+    /** Ao sair do evento, as contribuições do participante nele são removidas junto. */
     @Transactional
     public void cancelar(Long eventoId, Long participanteId) {
         Evento evento = eventoService.buscar(eventoId);
         Inscricao inscricao = buscar(eventoId, participanteId);
         evento.garantirJanelaDeAlteracoes(eventoService.agora());
+        contribuicaoRepository.removerDoParticipanteNoEvento(eventoId, participanteId);
         inscricaoRepository.delete(inscricao);
     }
 
