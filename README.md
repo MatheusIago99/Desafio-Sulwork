@@ -145,6 +145,7 @@ Decisões de arquitetura:
 - **Migrations versionadas com Flyway** e `ddl-auto: validate`: o schema é explícito, revisável e conferido pelo Hibernate na subida.
 - **Erros padronizados** (`@RestControllerAdvice`): `400` dados inválidos (com a lista de campos), `404` recurso inexistente, `409` conflito com dados existentes (CPF ou inscrição duplicada), `422` violação de regra de negócio (prazo vencido, limite excedido, transição inválida).
 - **`open-in-view` desligado**: toda leitura acontece dentro das transações dos services, sem consultas escondidas na serialização.
+- **Carregamento em lote (`default_batch_fetch_size`)**: as coleções de alérgenos e restrições são buscadas com `IN (...)`, evitando o problema N+1. A recarga da página do evento caiu de 71 para 30 consultas.
 
 **Padrões de projeto usados**, onde fizeram sentido:
 
@@ -370,6 +371,8 @@ Exemplo de erro de regra de negócio (`422`):
 - **Implementação:** geração da maior parte do código do backend e do frontend, seguindo a ordem de commits do histórico (cada funcionalidade com seus testes).
 - **Testes:** escrita dos cenários de teste e execução local da suíte, incluindo os testes de integração com Testcontainers.
 - **Verificação da interface:** navegação automatizada (Playwright) pelo fluxo principal para conferir o comportamento real e o layout no celular.
+- **Publicação:** configuração do deploy (Render, Vercel e Neon) e diagnóstico dos problemas que surgiram em produção.
+- **Interface:** refinamento visual (tipografia, paleta, componentes) a partir de revisões com screenshots.
 - **Documentação:** rascunho deste README.
 
 **Uma sugestão aceita:** travar o item com lock pessimista (`SELECT ... FOR UPDATE`) antes de validar a soma das contribuições. Aceitei porque a regra "a soma não pode ultrapassar a quantidade necessária" é exatamente o tipo de validação que quebra sob concorrência. Para não aceitar só na teoria, o teste de concorrência foi executado **com e sem o lock**: sem ele, mais contribuições do que o permitido eram aceitas; com ele, exatamente 2 de 4.
@@ -383,6 +386,8 @@ Exemplo de erro de regra de negócio (`422`):
 
 **Onde foi necessário maior julgamento próprio:**
 
+- **Lentidão percebida em produção.** Depois do deploy, notei que cada ação demorava cerca de 10 segundos. Os testes não mostravam isso, porque localmente tudo é rápido. A investigação mediu as consultas geradas pela página do evento: **71 por ação**, por causa do problema N+1 (alérgenos e restrições carregados um registro por vez). Com `hibernate.default_batch_fetch_size` caiu para **30**, e a JVM foi ajustada para o servidor gratuito com 0,1 de CPU. Aprendizado: o comportamento em produção precisa ser observado, e não só os testes.
+- **Onde hospedar cada parte.** A Vercel não executa uma aplicação Spring Boot contínua, então separei: frontend na Vercel, backend no Render (Docker) e banco no Neon, que não expira no plano gratuito. Também preferi chamar a API direto, com CORS, em vez de usar o proxy da Vercel, que cortaria as requisições enquanto o servidor gratuito acorda.
 - **Interpretação das regras abertas**: o que é a meta de uma categoria, se o organizador fica sujeito ao prazo e se conflitos de alérgenos devem bloquear contribuições. São decisões de produto, não de código, e foram pensadas a partir de como um evento de café da manhã realmente acontece.
 - **A fórmula de cobertura**, em especial usar razão em vez de unidades e separar "percentual" de "pronto".
 - **O que deixar de fora** (autenticação, notificações) para manter o escopo coerente com o desafio, registrando essas premissas.
