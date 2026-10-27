@@ -1,31 +1,47 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import type { Evento, EventoInput, StatusEvento } from '../api/types';
+import type { Evento, EventoInput, StatusEvento, TipoEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { EventoForm } from '../components/EventoForm';
+import { IconeBusca, IconeMais, IconeSeta } from '../components/Icones';
+import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
 import { STATUS_LABEL, TIPO_ICONE, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
 
+/** Busca sem diferenciar maiúsculas nem acentos. */
+function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 export function EventosPage() {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const [eventos, setEventos] = useState<Evento[] | null>(null);
-  const [filtro, setFiltro] = useState<StatusEvento | ''>('');
-  const [criando, setCriando] = useState(false);
+  const [busca, setBusca] = useState('');
+  const [tipo, setTipo] = useState<TipoEvento | ''>('');
+  const [status, setStatus] = useState<StatusEvento | ''>('');
   const [erro, setErro] = useState<string | null>(null);
-
-  const carregar = useCallback(async () => {
-    try {
-      setEventos(await api.eventos.listar(filtro || undefined));
-      setErro(null);
-    } catch (ex) {
-      setErro(ex instanceof Error ? ex.message : 'Erro ao carregar eventos');
-    }
-  }, [filtro]);
+  const criando = params.get('novo') === '1';
 
   useEffect(() => {
-    void carregar();
-  }, [carregar]);
+    api.eventos
+      .listar()
+      .then(setEventos)
+      .catch((ex: unknown) => setErro(ex instanceof Error ? ex.message : 'Erro ao carregar eventos'));
+  }, []);
+
+  const filtrados = useMemo(() => {
+    const termo = normalizar(busca.trim());
+    return (eventos ?? []).filter(
+      (e) =>
+        (!tipo || e.tipo === tipo) &&
+        (!status || e.status === status) &&
+        (!termo || normalizar(`${e.nome} ${e.descricao ?? ''}`).includes(termo)),
+    );
+  }, [eventos, busca, tipo, status]);
+
+  const fecharModal = () => setParams({}, { replace: true });
 
   const criar = async (dados: EventoInput) => {
     const evento = await api.eventos.criar(dados);
@@ -39,68 +55,112 @@ export function EventosPage() {
           <h1>Eventos</h1>
           <p className="pagina-subtitulo">Combine quem leva o quê e acompanhe o que ainda falta.</p>
         </div>
-        {!criando && (
-          <button type="button" className="botao botao-primario" onClick={() => setCriando(true)}>
-            Novo evento
-          </button>
-        )}
+        <button type="button" className="botao botao-primario" onClick={() => setParams({ novo: '1' })}>
+          <IconeMais /> Novo evento
+        </button>
       </div>
 
       {criando && (
-        <section className="cartao">
-          <h2>Novo evento</h2>
-          <p className="texto-suave">
+        <Modal titulo="Novo evento" onFechar={fecharModal} largo>
+          <p className="texto-suave modal-intro">
             O evento começa como rascunho. Cadastre categorias e itens e depois abra para os participantes.
           </p>
-          <EventoForm onSalvar={criar} onCancelar={() => setCriando(false)} />
-        </section>
+          <EventoForm onSalvar={criar} onCancelar={fecharModal} />
+        </Modal>
       )}
 
-      <label className="filtro">
-        Status{' '}
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value as StatusEvento | '')}>
-          <option value="">Todos</option>
+      <div className="barra-filtros">
+        <label className="campo-busca">
+          <IconeBusca />
+          <input
+            type="search"
+            placeholder="Buscar por nome ou descrição"
+            aria-label="Buscar eventos"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </label>
+        <select aria-label="Filtrar por tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoEvento | '')}>
+          <option value="">Todos os tipos</option>
+          {Object.entries(TIPO_LABEL).map(([valor, rotulo]) => (
+            <option key={valor} value={valor}>
+              {rotulo}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Filtrar por status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as StatusEvento | '')}
+        >
+          <option value="">Todos os status</option>
           {Object.entries(STATUS_LABEL).map(([valor, rotulo]) => (
             <option key={valor} value={valor}>
               {rotulo}
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
       {erro && <Alerta tipo="erro">{erro}</Alerta>}
       {eventos === null && !erro && <p className="texto-suave">Carregando...</p>}
-      {eventos?.length === 0 && <p className="vazio">Nenhum evento encontrado.</p>}
+      {eventos !== null && filtrados.length === 0 && (
+        <p className="vazio">
+          {eventos.length === 0 ? 'Nenhum evento cadastrado ainda.' : 'Nenhum evento corresponde aos filtros.'}
+        </p>
+      )}
 
-      <ul className="grade-eventos">
-        {eventos?.map((evento) => (
-          <li key={evento.id}>
-            <Link to={`/eventos/${evento.id}`} className="cartao cartao-evento">
-              <div className="cartao-evento-topo">
-                <span className="evento-data" aria-hidden="true">
-                  <strong>{partesData(evento.dataHora).dia}</strong>
-                  <span>{partesData(evento.dataHora).mes}</span>
-                </span>
-                <StatusBadge status={evento.status} />
-              </div>
-              <span className="evento-tipo">
-                <span aria-hidden="true">{TIPO_ICONE[evento.tipo]}</span> {TIPO_LABEL[evento.tipo]}
-              </span>
-              <h2>{evento.nome}</h2>
-              <p className="texto-suave">{formatarDataHora(evento.dataHora)}</p>
-              <p className="cartao-evento-rodape">
-                {evento.aceitaAlteracoes
-                  ? `Contribuições até ${formatarDataHora(evento.prazoAlteracoes)}`
-                  : evento.status === 'ABERTO' && evento.prazoVencido
-                    ? 'Prazo para alterações encerrado'
-                    : evento.status === 'RASCUNHO'
-                      ? 'Em organização'
-                      : ''}
-              </p>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {filtrados.length > 0 && (
+        <div className="tabela-container">
+          <table className="tabela tabela-eventos">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Evento</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Alterações até</th>
+                <th aria-label="Abrir" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtrados.map((evento) => {
+                const data = partesData(evento.dataHora);
+                return (
+                  <tr key={evento.id} className="linha-clicavel" onClick={() => navigate(`/eventos/${evento.id}`)}>
+                    <td>
+                      <span className="evento-data evento-data-claro" aria-hidden="true">
+                        <strong>{data.dia}</strong>
+                        <span>{data.mes}</span>
+                      </span>
+                    </td>
+                    <td>
+                      <Link to={`/eventos/${evento.id}`} className="link-evento" onClick={(e) => e.stopPropagation()}>
+                        {evento.nome}
+                      </Link>
+                      <div className="texto-suave texto-pequeno">{formatarDataHora(evento.dataHora)}</div>
+                    </td>
+                    <td className="nowrap">
+                      <span aria-hidden="true">{TIPO_ICONE[evento.tipo]}</span> {TIPO_LABEL[evento.tipo]}
+                    </td>
+                    <td>
+                      <StatusBadge status={evento.status} />
+                    </td>
+                    <td className="texto-suave texto-pequeno">
+                      {evento.status === 'ABERTO' && evento.prazoVencido
+                        ? 'Prazo encerrado'
+                        : formatarDataHora(evento.prazoAlteracoes)}
+                    </td>
+                    <td className="acoes-tabela texto-suave">
+                      <IconeSeta />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
