@@ -13,6 +13,9 @@ spring:
       hibernate:
         jdbc:
           time_zone: America/Sao_Paulo
+        # Carrega coleções (alérgenos dos itens, restrições dos participantes) em lote,
+        # com IN (...), em vez de uma consulta por registro (problema N+1).
+        default_batch_fetch_size: 100
   flyway:
     locations: classpath:db/migration
   jackson:
