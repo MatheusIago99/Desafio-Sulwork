@@ -3,6 +3,7 @@ package br.com.sulwork.inscricao;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,7 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
 
     boolean existsByParticipanteId(Long participanteId);
 
+    @EntityGraph(attributePaths = "participante")
     Optional<Inscricao> findByEventoIdAndParticipanteId(Long eventoId, Long participanteId);
 
     @Query("""
