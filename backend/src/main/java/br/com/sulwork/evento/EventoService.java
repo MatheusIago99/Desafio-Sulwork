@@ -7,6 +7,7 @@ import java.util.List;
 import br.com.sulwork.common.exception.RecursoNaoEncontradoException;
 import br.com.sulwork.common.exception.RegraNegocioException;
 import br.com.sulwork.evento.dto.EventoRequest;
+import br.com.sulwork.item.ItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class EventoService {
 
     private final EventoRepository eventoRepository;
+    private final ItemRepository itemRepository;
     private final Clock clock;
 
-    public EventoService(EventoRepository eventoRepository, Clock clock) {
+    public EventoService(EventoRepository eventoRepository, ItemRepository itemRepository, Clock clock) {
         this.eventoRepository = eventoRepository;
+        this.itemRepository = itemRepository;
         this.clock = clock;
     }
 
@@ -52,6 +55,9 @@ public class EventoService {
     @Transactional
     public Evento alterarStatus(Long id, StatusEvento destino) {
         Evento evento = buscar(id);
+        if (destino == StatusEvento.ABERTO && itemRepository.countByEventoId(id) == 0) {
+            throw new RegraNegocioException("Cadastre ao menos um item antes de abrir o evento.");
+        }
         evento.transicionarPara(destino, agora());
         return evento;
     }
