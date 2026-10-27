@@ -15,5 +15,33 @@ services:
       timeout: 3s
       retries: 10
 
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/sulwork
+      DB_USERNAME: sulwork
+      DB_PASSWORD: sulwork
+      # "demo" popula dados de exemplo quando o banco está vazio; use SPRING_PROFILES_ACTIVE= para começar do zero
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE-demo}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   db-data:
