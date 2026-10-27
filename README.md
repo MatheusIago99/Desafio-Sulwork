@@ -2,9 +2,15 @@
 
 Aplicação para organizar os eventos de alimentação da Sulwork (cafés da manhã, almoços, churrascos...). O organizador cadastra o evento com categorias e itens, os colaboradores se inscrevem e combinam quem leva o quê, e todos acompanham **quanto das necessidades já foi atendido** e **o que ainda falta**, levando em conta as restrições alimentares de quem vai participar.
 
-- **Repositório:** https://github.com/MatheusIago99/Desafio-Sulwork
-- **Aplicação publicada:** _(link da publicação)_
-- **Swagger/OpenAPI:** `http://localhost:8080/swagger-ui.html` (local) · JSON em `/v3/api-docs`
+| | Link |
+|---|---|
+| **Aplicação publicada** | https://desafio-sulwork-ebon.vercel.app |
+| **API** | https://sulwork-eventos-api.onrender.com/api |
+| **Swagger UI (publicado)** | https://sulwork-eventos-api.onrender.com/swagger-ui.html |
+| **OpenAPI (JSON)** | https://sulwork-eventos-api.onrender.com/v3/api-docs |
+| **Repositório** | https://github.com/MatheusIago99/Desafio-Sulwork |
+
+> A API está no plano gratuito do Render, que desliga o servidor após um período sem uso. **O primeiro acesso pode levar até 1 minuto**; se a tela mostrar erro de conexão, aguarde e recarregue. A aplicação publicada sobe com dados de demonstração.
 
 ---
 
@@ -78,6 +84,16 @@ npm run dev
 
 Variáveis do backend: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`, `SPRING_PROFILES_ACTIVE`.
 Variável do frontend (build): `VITE_API_URL` (padrão `/api`).
+
+### Publicação
+
+| Parte | Hospedagem | Configuração |
+|---|---|---|
+| Frontend | Vercel | Projeto ligado ao GitHub (`frontend/` como raiz, preset Vite), com `VITE_API_URL` apontando para a API. Novo deploy a cada push na `main`. |
+| Backend | Render (Docker) | Blueprint em [`render.yaml`](render.yaml), usando o `backend/Dockerfile`, com health check em `/actuator/health`. As credenciais do banco ficam no painel do Render, não no repositório. |
+| Banco | Neon (PostgreSQL 16) | Schema criado pelas migrations do Flyway na subida do backend. |
+
+O frontend chama a API diretamente, com o domínio da Vercel liberado no CORS (`CORS_ALLOWED_ORIGINS`). Usar o proxy da Vercel (`rewrites`) evitaria o CORS, mas ele encerra a requisição antes de o servidor gratuito do Render terminar de acordar.
 
 ## Como rodar os testes
 
