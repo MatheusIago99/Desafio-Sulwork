@@ -41,7 +41,12 @@ export function App() {
         <header className="topo">
           <div className="topo-conteudo">
             <NavLink to="/" className="marca">
-              🍽️ Sulwork Eventos
+              <span className="marca-icone" aria-hidden="true">
+                S
+              </span>
+              <span>
+                Sulwork <span className="marca-destaque">Eventos</span>
+              </span>
             </NavLink>
             <nav className="menu">
               <NavLink to="/" end>

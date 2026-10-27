@@ -8,7 +8,7 @@ import { EventoForm } from '../components/EventoForm';
 import { PendenciasLista } from '../components/PendenciasLista';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { ACAO_STATUS, TIPO_LABEL, formatarDataHora } from '../utils/format';
+import { ACAO_STATUS, TIPO_ICONE, TIPO_LABEL, formatarDataHora } from '../utils/format';
 import { AbaContribuicoes } from './evento/AbaContribuicoes';
 import { AbaItens } from './evento/AbaItens';
 import { AbaParticipantes } from './evento/AbaParticipantes';
@@ -118,7 +118,9 @@ export function EventoPage() {
         <div>
           <div className="linha-inline">
             <StatusBadge status={evento.status} />
-            <span className="texto-suave">{TIPO_LABEL[evento.tipo]}</span>
+            <span className="evento-tipo">
+              <span aria-hidden="true">{TIPO_ICONE[evento.tipo]}</span> {TIPO_LABEL[evento.tipo]}
+            </span>
           </div>
           <h1>{evento.nome}</h1>
           {evento.descricao && <p>{evento.descricao}</p>}

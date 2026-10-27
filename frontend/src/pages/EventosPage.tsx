@@ -5,7 +5,7 @@ import type { Evento, EventoInput, StatusEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { EventoForm } from '../components/EventoForm';
 import { StatusBadge } from '../components/StatusBadge';
-import { STATUS_LABEL, TIPO_LABEL, formatarDataHora } from '../utils/format';
+import { STATUS_LABEL, TIPO_ICONE, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
 
 export function EventosPage() {
   const navigate = useNavigate();
@@ -35,7 +35,10 @@ export function EventosPage() {
   return (
     <div className="pagina">
       <div className="pagina-cabecalho">
-        <h1>Eventos</h1>
+        <div>
+          <h1>Eventos</h1>
+          <p className="pagina-subtitulo">Combine quem leva o quê e acompanhe o que ainda falta.</p>
+        </div>
         {!criando && (
           <button type="button" className="botao botao-primario" onClick={() => setCriando(true)}>
             Novo evento
@@ -73,18 +76,26 @@ export function EventosPage() {
         {eventos?.map((evento) => (
           <li key={evento.id}>
             <Link to={`/eventos/${evento.id}`} className="cartao cartao-evento">
-              <div className="linha-entre">
-                <span className="texto-suave">{TIPO_LABEL[evento.tipo]}</span>
+              <div className="cartao-evento-topo">
+                <span className="evento-data" aria-hidden="true">
+                  <strong>{partesData(evento.dataHora).dia}</strong>
+                  <span>{partesData(evento.dataHora).mes}</span>
+                </span>
                 <StatusBadge status={evento.status} />
               </div>
+              <span className="evento-tipo">
+                <span aria-hidden="true">{TIPO_ICONE[evento.tipo]}</span> {TIPO_LABEL[evento.tipo]}
+              </span>
               <h2>{evento.nome}</h2>
-              <p>{formatarDataHora(evento.dataHora)}</p>
-              <p className="texto-suave">
+              <p className="texto-suave">{formatarDataHora(evento.dataHora)}</p>
+              <p className="cartao-evento-rodape">
                 {evento.aceitaAlteracoes
                   ? `Contribuições até ${formatarDataHora(evento.prazoAlteracoes)}`
                   : evento.status === 'ABERTO' && evento.prazoVencido
                     ? 'Prazo para alterações encerrado'
-                    : ''}
+                    : evento.status === 'RASCUNHO'
+                      ? 'Em organização'
+                      : ''}
               </p>
             </Link>
           </li>

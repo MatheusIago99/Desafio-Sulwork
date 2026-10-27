@@ -26,6 +26,15 @@ export const TIPO_LABEL: Record<TipoEvento, string> = {
   OUTRO: 'Outro',
 };
 
+export const TIPO_ICONE: Record<TipoEvento, string> = {
+  CAFE_DA_MANHA: '☕',
+  ALMOCO: '🍽️',
+  LANCHE: '🥪',
+  CHURRASCO: '🔥',
+  CONFRATERNIZACAO: '🎉',
+  OUTRO: '🍴',
+};
+
 export const ALERGENO_LABEL: Record<Alergeno, string> = {
   GLUTEN: 'Glúten',
   LACTOSE: 'Lactose',
@@ -58,6 +67,15 @@ const formatoDataHora = new Intl.DateTimeFormat('pt-BR', {
 /** Datas vêm da API como LocalDateTime (sem fuso), no horário de São Paulo. */
 export function formatarDataHora(iso: string): string {
   return formatoDataHora.format(new Date(iso));
+}
+
+/** Dia e mês abreviado, para o bloco de data dos cartões (ex.: { dia: '03', mes: 'nov' }). */
+export function partesData(iso: string): { dia: string; mes: string } {
+  const data = new Date(iso);
+  return {
+    dia: String(data.getDate()).padStart(2, '0'),
+    mes: data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+  };
 }
 
 /** Converte o valor da API para o formato aceito por <input type="datetime-local">. */
