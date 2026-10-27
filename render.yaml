@@ -1,0 +1,23 @@
+# Blueprint do Render para o backend (https://render.com/docs/blueprint-spec).
+# O banco fica no Neon e o frontend na Vercel; as credenciais do banco são
+# informadas no painel do Render (sync: false), nunca versionadas.
+services:
+  - type: web
+    name: sulwork-eventos-api
+    runtime: docker
+    region: virginia
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://desafio-sulwork.vercel.app,http://localhost:5173,http://localhost:3000

@@ -48,7 +48,10 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError(0, 'Não foi possível conectar à API. Verifique se o backend está no ar.');
+    throw new ApiError(
+      0,
+      'Não foi possível conectar à API. Se a aplicação estiver hospedada em plano gratuito, o servidor pode levar até 1 minuto para iniciar; tente novamente em instantes.',
+    );
   }
 
   if (response.status === 204) return undefined as T;
