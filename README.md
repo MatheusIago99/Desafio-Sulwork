@@ -133,6 +133,7 @@ br.com.sulwork
 ├── cobertura      Consulta SQL nativa + CalculadoraCobertura
 ├── alergeno       Enum Alergeno e cruzamento restrições × alérgenos
 ├── pendencia      Feature livre "O que falta?"
+├── dashboard      Indicadores gerais da tela inicial
 ├── demo           Dados de demonstração (perfil demo)
 └── common         Tratamento de erros, validação de CPF, configurações
 ```
@@ -163,9 +164,11 @@ Decisões de arquitetura:
 src
 ├── api          cliente REST tipado e tipos da API
 ├── components   componentes reutilizáveis (cobertura, lista O que falta, formulários...)
-├── pages        Eventos, Evento (com abas) e Participantes
+├── pages        Dashboard, Eventos (tabela com busca e filtros), Evento (com abas) e Participantes
 └── utils        CPF (máscara/validação) e formatação
 ```
+
+O **dashboard** mostra só indicadores calculados a partir dos dados (eventos abertos, cobertura média, obrigatórios sem dono, eventos por tipo e próximos eventos); não há métricas estimadas. Quando não há eventos abertos, a cobertura média aparece como "—" em vez de um 0% enganoso.
 
 A página do evento carrega todos os dados em paralelo e recarrega depois de cada alteração. As regras ficam todas no backend: o frontend só usa os campos derivados para habilitar ou desabilitar ações e mostra a mensagem de erro devolvida pela API.
 
@@ -333,6 +336,7 @@ Documentação interativa completa no **Swagger UI** (`/swagger-ui.html`). Resum
 | GET | `/api/eventos/{id}/restricoes` | Restrições × alérgenos |
 | GET | `/api/eventos/{id}/pendencias` | Feature "O que falta?" (`?participanteId=` opcional) |
 | POST | `/api/eventos/{id}/pendencias/{itemId}/assumir` | "Eu levo" |
+| GET | `/api/dashboard` | Indicadores: eventos abertos, cobertura média, obrigatórios pendentes, eventos por tipo e próximos eventos |
 | GET | `/api/alergenos` | Vocabulário de alérgenos |
 
 Exemplo de erro de regra de negócio (`422`):
@@ -348,7 +352,7 @@ Exemplo de erro de regra de negócio (`422`):
 
 ## Testes
 
-**Backend: 100 testes** (`./mvnw verify`).
+**Backend: 103 testes** (`./mvnw verify`).
 
 | Tipo | Classes | O que cobrem |
 |---|---|---|
@@ -357,9 +361,9 @@ Exemplo de erro de regra de negócio (`422`):
 | | `ContribuicaoServiceTest` (Mockito) | Limite, inscrição obrigatória, duplicidade, prazo, status, alteração de quantidade |
 | | `CalculadoraCoberturaTest` | Pesos, razão × unidades, metas, metas inatingíveis, arredondamento, "pronto" |
 | | `AnalisadorRestricoesTest` | Agrupamento de restrições, conflitos por item, observações |
-| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
+| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
 
-**Frontend: 26 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
+**Frontend: 31 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, dashboard (indicadores e ausência de cobertura sem eventos abertos), modal (foco, Esc e regressão do foco ao digitar), formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
 
 ## Uso de IA
 
