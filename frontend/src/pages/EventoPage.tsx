@@ -63,8 +63,10 @@ export function EventoPage() {
   const executar: Executar = async (acao, sucesso) => {
     try {
       await acao();
-      setMensagem(sucesso ? { tipo: 'sucesso', texto: sucesso } : null);
+      // A mensagem só aparece depois de recarregar: assim ela surge junto com a limpeza do
+      // formulário (feita por quem chamou), e nada que o usuário escolher em seguida é apagado.
       await carregar();
+      setMensagem(sucesso ? { tipo: 'sucesso', texto: sucesso } : null);
       return true;
     } catch (ex) {
       setMensagem({ tipo: 'erro', texto: ex instanceof Error ? ex.message : 'Erro inesperado' });
