@@ -76,11 +76,13 @@ docker compose up -d db
 cd backend
 SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
 
-# 3. Frontend (porta 5173, com proxy de /api para o backend)
+# 3. Frontend (porta 5173, com proxy de /api para o backend) — em outro terminal, a partir da raiz
 cd frontend
 npm install
 npm run dev
 ```
+
+No Windows (PowerShell), o passo 2 fica: `$env:SPRING_PROFILES_ACTIVE="demo"; .\mvnw.cmd spring-boot:run`.
 
 Variáveis do backend: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`, `SPRING_PROFILES_ACTIVE`.
 Variável do frontend (build): `VITE_API_URL` (padrão `/api`).
@@ -97,6 +99,8 @@ O frontend chama a API diretamente, com o domínio da Vercel liberado no CORS (`
 
 ## Como rodar os testes
 
+A partir da raiz do repositório:
+
 ```bash
 # Backend — testes unitários (rápidos, sem banco)
 cd backend
@@ -106,9 +110,12 @@ cd backend
 ./mvnw verify
 
 # Frontend
-cd frontend
+cd ../frontend
+npm install
 npm test
 ```
+
+Não é preciso ter o Maven instalado: o Maven Wrapper (`mvnw`) baixa a versão certa. No Windows, use `mvnw.cmd` no lugar de `./mvnw`. Requisitos: Java 21 e Node.js 20 ou superior.
 
 ## Arquitetura
 
@@ -230,7 +237,8 @@ O que cada status permite:
 - **O status não muda automaticamente quando o prazo vence.** O status representa uma decisão do organizador; o prazo é uma trava automática. Um evento `ABERTO` com prazo vencido é exibido como "prazo encerrado", e o organizador pode **estender o prazo** (editando o evento) ou **encerrá-lo**.
 - **Encerrar antes do prazo é permitido**: o organizador pode fechar a lista mais cedo, e as alterações param na hora, mesmo dentro do prazo.
 - **Reabrir só é permitido com prazo vigente**: não faz sentido reabrir um evento em que ninguém mais pode contribuir.
-- O prazo não pode ser posterior à data do evento (validado na API e com `CHECK` no banco), e a data do evento precisa estar no futuro ao criar ou editar.
+- Ao criar ou editar, a data do evento e o prazo precisam estar no futuro, e o prazo não pode ser posterior à data do evento (validado na API e com `CHECK` no banco). Um prazo já vencido geraria um evento impossível de abrir; para fechar as alterações antes do prazo, o organizador encerra o evento.
+- Todos os campos do evento exigidos pelo enunciado são obrigatórios, incluindo a descrição.
 - **O organizador pode ajustar categorias e itens com o evento `RASCUNHO` ou `ABERTO`, mesmo após o prazo.** O prazo protege os compromissos dos participantes, não o planejamento. Mesmo assim, há proteções: a quantidade necessária de um item não pode ficar abaixo do que já foi contribuído, e um item com contribuições não pode ser excluído.
 
 ### Participantes e inscrições
@@ -352,7 +360,7 @@ Exemplo de erro de regra de negócio (`422`):
 
 ## Testes
 
-**Backend: 103 testes** (`./mvnw verify`).
+**Backend: 107 testes** (`./mvnw verify`).
 
 | Tipo | Classes | O que cobrem |
 |---|---|---|
