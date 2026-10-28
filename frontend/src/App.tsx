@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import { api } from './api/client';
 import type { Participante } from './api/types';
-import { IconeCalendario, IconeInicio, IconePessoas } from './components/Icones';
+import { IconeCalendario, IconeInicio, IconeLista, IconePessoas } from './components/Icones';
 import { DashboardPage } from './pages/DashboardPage';
 import { EventoPage } from './pages/EventoPage';
 import { EventosPage } from './pages/EventosPage';
+import { MinhasContribuicoesPage } from './pages/MinhasContribuicoesPage';
 import { ParticipantesPage } from './pages/ParticipantesPage';
 import { ParticipanteAtualProvider, useParticipanteAtual } from './ParticipanteAtual';
 import { iniciais } from './utils/iniciais';
@@ -66,6 +67,9 @@ export function App() {
               <NavLink to="/eventos">
                 <IconeCalendario /> Eventos
               </NavLink>
+              <NavLink to="/minhas-contribuicoes">
+                <IconeLista /> Minhas contribuições
+              </NavLink>
               <NavLink to="/participantes">
                 <IconePessoas /> Participantes
               </NavLink>
@@ -77,6 +81,7 @@ export function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/eventos" element={<EventosPage />} />
               <Route path="/eventos/:id" element={<EventoPage />} />
+              <Route path="/minhas-contribuicoes" element={<MinhasContribuicoesPage />} />
               <Route path="/participantes" element={<ParticipantesPage />} />
             </Routes>
           </main>

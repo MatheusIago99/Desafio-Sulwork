@@ -34,6 +34,13 @@ export const IconePessoas = () => (
   </svg>
 );
 
+export const IconeLista = () => (
+  <svg {...base}>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <path d="m3.5 6 1.2 1.2L7 4.8M3.5 12l1.2 1.2L7 10.8M3.5 18l1.2 1.2L7 16.8" />
+  </svg>
+);
+
 export const IconeBusca = () => (
   <svg {...base}>
     <circle cx="11" cy="11" r="7" />

@@ -1092,6 +1092,41 @@ input[type='checkbox'] {
   margin-top: 0.4rem;
 }
 
+/* Minhas contribuições */
+.grupo-contribuicoes {
+  padding: 0;
+  overflow: hidden;
+}
+
+.grupo-cabecalho {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.grupo-cabecalho h2 {
+  margin: 0.4rem 0 0.1rem;
+}
+
+.grupo-cabecalho p {
+  margin: 0;
+}
+
+.grupo-bloqueado {
+  margin: 0;
+  padding: 0.6rem 1.25rem;
+  border-bottom: 1px solid var(--borda);
+  background: var(--aviso-claro);
+  color: #7a4e00;
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+.item-nome {
+  font-weight: 500;
+}
+
 /* ==========================================================================
    Modal
    ========================================================================== */

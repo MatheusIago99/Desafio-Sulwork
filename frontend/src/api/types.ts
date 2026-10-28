@@ -144,6 +144,24 @@ export interface ResumoRestricoes {
   }[];
 }
 
+export interface MinhaContribuicao {
+  contribuicaoId: number;
+  eventoId: number;
+  eventoNome: string;
+  eventoDataHora: string;
+  prazoAlteracoes: string;
+  eventoStatus: StatusEvento;
+  prazoVencido: boolean;
+  aceitaAlteracoes: boolean;
+  itemId: number;
+  itemNome: string;
+  unidade: string | null;
+  obrigatorio: boolean;
+  quantidade: number;
+  quantidadeNecessaria: number;
+  quantidadeContribuidaTotal: number;
+}
+
 export interface ProximoEvento {
   evento: Evento;
   inscritos: number;

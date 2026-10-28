@@ -7,6 +7,7 @@ import type {
   EventoInput,
   Inscricao,
   Item,
+  MinhaContribuicao,
   ItemInput,
   Participante,
   ParticipanteInput,
@@ -87,6 +88,7 @@ export const api = {
     criar: (dados: ParticipanteInput) => post<Participante>('/participantes', dados),
     atualizar: (id: number, dados: ParticipanteInput) => put<Participante>(`/participantes/${id}`, dados),
     excluir: (id: number) => del(`/participantes/${id}`),
+    contribuicoes: (id: number) => get<MinhaContribuicao[]>(`/participantes/${id}/contribuicoes`),
   },
   inscricoes: {
     listar: (eventoId: number) => get<Inscricao[]>(`/eventos/${eventoId}/inscricoes`),
