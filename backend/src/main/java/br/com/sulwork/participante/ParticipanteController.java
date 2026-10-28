@@ -2,6 +2,7 @@ package br.com.sulwork.participante;
 
 import java.util.List;
 
+import br.com.sulwork.participante.dto.AtualizarParticipanteRequest;
 import br.com.sulwork.participante.dto.ParticipanteRequest;
 import br.com.sulwork.participante.dto.ParticipanteResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,8 @@ public class ParticipanteController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza nome e restrições alimentares (o CPF não muda)")
-    public ParticipanteResponse atualizar(@PathVariable Long id, @Valid @RequestBody ParticipanteRequest request) {
+    public ParticipanteResponse atualizar(@PathVariable Long id,
+                                          @Valid @RequestBody AtualizarParticipanteRequest request) {
         return ParticipanteResponse.de(participanteService.atualizar(id, request));
     }
 

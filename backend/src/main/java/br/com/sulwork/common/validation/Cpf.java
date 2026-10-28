@@ -12,6 +12,19 @@ public final class Cpf {
         return cpf == null ? null : cpf.replaceAll("[.\\-\\s]", "");
     }
 
+    /**
+     * Mascara o CPF para exibição, mostrando só os seis dígitos do meio
+     * (ex.: 52998224725 -> ***.982.247-**), padrão usado em publicações do governo
+     * para não expor o número completo.
+     */
+    public static String mascarar(String cpf) {
+        String digitos = normalizar(cpf);
+        if (digitos == null || digitos.length() != 11) {
+            return "***.***.***-**";
+        }
+        return "***." + digitos.substring(3, 6) + "." + digitos.substring(6, 9) + "-**";
+    }
+
     public static boolean isValido(String cpf) {
         String digitos = normalizar(cpf);
         if (digitos == null || !digitos.matches("\\d{11}")) {

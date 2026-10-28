@@ -6,6 +6,7 @@ import br.com.sulwork.common.exception.ConflitoException;
 import br.com.sulwork.common.exception.RecursoNaoEncontradoException;
 import br.com.sulwork.common.validation.Cpf;
 import br.com.sulwork.inscricao.InscricaoRepository;
+import br.com.sulwork.participante.dto.AtualizarParticipanteRequest;
 import br.com.sulwork.participante.dto.ParticipanteRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,11 +49,8 @@ public class ParticipanteService {
     }
 
     @Transactional
-    public Participante atualizar(Long id, ParticipanteRequest req) {
+    public Participante atualizar(Long id, AtualizarParticipanteRequest req) {
         Participante participante = buscar(id);
-        if (!participante.getCpf().equals(Cpf.normalizar(req.cpf()))) {
-            throw new ConflitoException("O CPF não pode ser alterado.");
-        }
         participante.atualizar(req.nome().trim(), req.restricoes(), req.observacoesAlimentares());
         return participante;
     }

@@ -35,6 +35,13 @@ class CpfTest {
     }
 
     @Test
+    void deveMascararMostrandoSoOsDigitosDoMeio() {
+        assertThat(Cpf.mascarar("52998224725")).isEqualTo("***.982.247-**");
+        assertThat(Cpf.mascarar("529.982.247-25")).isEqualTo("***.982.247-**");
+        assertThat(Cpf.mascarar("123")).isEqualTo("***.***.***-**");
+    }
+
+    @Test
     void deveNormalizarRemovendoMascara() {
         assertThat(Cpf.normalizar("529.982.247-25")).isEqualTo("52998224725");
     }
