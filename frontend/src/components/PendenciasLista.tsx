@@ -22,7 +22,7 @@ export function PendenciasLista({ pendencias, participanteSelecionado, participa
 
   let motivoBloqueio: string | null = null;
   if (!pendencias.aceitaContribuicoes) motivoBloqueio = 'O evento não está aceitando contribuições.';
-  else if (!participanteSelecionado) motivoBloqueio = 'Selecione quem é você no topo da página para assumir itens.';
+  else if (!participanteSelecionado) motivoBloqueio = 'Selecione seu nome no campo "Você é" para assumir itens.';
   else if (!participanteInscrito) motivoBloqueio = 'Inscreva-se no evento (aba Participantes) para assumir itens.';
 
   return (

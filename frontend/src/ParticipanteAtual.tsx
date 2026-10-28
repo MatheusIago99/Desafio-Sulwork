@@ -23,7 +23,7 @@ function lerSalvo(): number | null {
 
 /**
  * A aplicação não tem autenticação (premissa documentada no README): o usuário escolhe
- * "quem é você" no topo da página, e essa escolha é usada nas ações de contribuição.
+ * "quem é você" no campo "Você é" do menu, e essa escolha é usada nas ações de contribuição.
  */
 export function ParticipanteAtualProvider({ children }: { children: ReactNode }) {
   const [participanteId, setId] = useState<number | null>(lerSalvo);

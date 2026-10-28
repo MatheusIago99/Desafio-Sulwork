@@ -256,7 +256,7 @@ O que cada status permite:
 
 ### Premissas
 
-- **Sem autenticação.** O desafio não pede controle de acesso. Na interface, o seletor **"Você é"** no topo define o participante atual, usado na ação "Eu levo". Qualquer pessoa pode agir como organizador. Em produção, isso seria substituído por login (ex.: SSO corporativo), com papéis de organizador e participante.
+- **Sem autenticação.** O desafio não pede controle de acesso. Na interface, o seletor **"Você é"** (no rodapé do menu lateral; no celular, no topo) define o participante atual, usado na ação "Eu levo". Qualquer pessoa pode agir como organizador. Em produção, isso seria substituído por login (ex.: SSO corporativo), com papéis de organizador e participante.
 - **Quantidades são inteiras**, com unidade opcional em texto (ex.: "litros", "pacotes"). Frações (1,5 kg) podem ser representadas trocando a unidade (1500 g).
 - **Datas são horário local de São Paulo** (`LocalDateTime`), já que todos os eventos são presenciais na empresa.
 

@@ -64,7 +64,7 @@ describe('PendenciasLista ("O que falta?")', () => {
 
   it.each([
     [false, true, true, 'não está aceitando contribuições'],
-    [true, false, false, 'Selecione quem é você'],
+    [true, false, false, 'Selecione seu nome no campo "Você é"'],
     [true, true, false, 'Inscreva-se no evento'],
   ])(
     'bloqueia a ação e explica o motivo (aceita=%s, selecionado=%s, inscrito=%s)',
