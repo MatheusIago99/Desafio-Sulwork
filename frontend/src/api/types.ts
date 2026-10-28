@@ -177,8 +177,30 @@ export interface Dashboard {
   inscricoesEmEventosAbertos: number;
   coberturaMedia: number | null;
   obrigatoriosPendentes: number;
+  proximosEventosTotal: number;
+  proximosEventosNaSemana: number;
+  contribuicoesTotal: number;
+  ultimaContribuicaoEm: string | null;
   eventosPorTipo: { tipo: TipoEvento; quantidade: number }[];
   proximosEventos: ProximoEvento[];
+  pendenciasPrioritarias: {
+    eventoId: number;
+    eventoNome: string;
+    itemId: number;
+    itemNome: string;
+    categoria: string;
+    quantidadeFaltante: number;
+    unidade: string | null;
+  }[];
+  contribuicoesRecentes: {
+    eventoId: number;
+    eventoNome: string;
+    participanteNome: string;
+    itemNome: string;
+    quantidade: number;
+    unidade: string | null;
+    atualizadoEm: string;
+  }[];
 }
 
 export type Prioridade = 'ALTA' | 'MEDIA' | 'BAIXA';

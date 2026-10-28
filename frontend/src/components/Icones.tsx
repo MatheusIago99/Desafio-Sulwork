@@ -59,3 +59,38 @@ export const IconeSeta = () => (
     <path d="m9 6 6 6-6 6" />
   </svg>
 );
+
+export const IconeCheck = () => (
+  <svg {...base}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m8 12.5 2.5 2.5L16 9.5" />
+  </svg>
+);
+
+export const IconeAlerta = () => (
+  <svg {...base}>
+    <path d="M12 8v5M12 16.5v.5" />
+    <path d="M10.3 3.9 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+  </svg>
+);
+
+export const IconeGrafico = () => (
+  <svg {...base}>
+    <path d="M12 3a9 9 0 1 0 9 9h-9V3Z" />
+    <path d="M15 3.5A9 9 0 0 1 20.5 9H15V3.5Z" />
+  </svg>
+);
+
+export const IconeRelogio = () => (
+  <svg {...base}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+
+export const IconeCaixa = () => (
+  <svg {...base}>
+    <path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9Z" />
+    <path d="M3.5 7.5 12 12l8.5-4.5M12 12v9" />
+  </svg>
+);

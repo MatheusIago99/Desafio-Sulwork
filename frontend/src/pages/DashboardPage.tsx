@@ -1,14 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import type { Dashboard, Participante } from '../api/types';
+import type { Dashboard, Participante, ProximoEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { BarraProgresso } from '../components/BarraProgresso';
-import { IconeSeta } from '../components/Icones';
+import {
+  IconeAlerta,
+  IconeCaixa,
+  IconeCalendario,
+  IconeCheck,
+  IconeGrafico,
+  IconePessoas,
+  IconeRelogio,
+  IconeSeta,
+} from '../components/Icones';
 import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+import { TIPO_LABEL, formatarDataHora, formatarQuantidade } from '../utils/format';
+import { iniciais } from '../utils/iniciais';
+import { tempoRelativo } from '../utils/tempoRelativo';
+
+type Periodo = 'todos' | 'semana' | 'quinzena';
+
+const PERIODOS: { valor: Periodo; rotulo: string; dias: number | null }[] = [
+  { valor: 'todos', rotulo: 'Todos', dias: null },
+  { valor: 'semana', rotulo: 'Esta semana', dias: 7 },
+  { valor: 'quinzena', rotulo: 'Próximos 15 dias', dias: 15 },
+];
+
+const formatoHoje = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export function DashboardPage() {
   const { participanteId } = useParticipanteAtual();
@@ -22,7 +43,7 @@ export function DashboardPage() {
         setDados(dashboard);
         setParticipantes(lista);
       })
-      .catch((ex: unknown) => setErro(ex instanceof Error ? ex.message : 'Erro ao carregar o dashboard'));
+      .catch((ex: unknown) => setErro(ex instanceof Error ? ex.message : 'Erro ao carregar a visão geral'));
   }, []);
 
   const nome = participantes.find((p) => p.id === participanteId)?.nome.split(' ')[0];
@@ -31,12 +52,19 @@ export function DashboardPage() {
     <div className="pagina">
       <div className="pagina-cabecalho">
         <div>
-          <h1>{nome ? `Olá, ${nome}!` : 'Olá!'}</h1>
-          <p className="pagina-subtitulo">Um resumo dos eventos de alimentação da Sulwork.</p>
+          <h1>Visão geral</h1>
+          <p className="pagina-subtitulo">
+            {nome ? `Olá, ${nome}. ` : ''}Organize os eventos e acompanhe as pendências.
+          </p>
         </div>
-        <Link to="/eventos?novo=1" className="botao botao-primario">
-          Novo evento
-        </Link>
+        <div className="cabecalho-acoes">
+          <span className="data-hoje">
+            <IconeCalendario /> {formatoHoje.format(new Date())}
+          </span>
+          <Link to="/eventos?novo=1" className="botao botao-primario">
+            Novo evento
+          </Link>
+        </div>
       </div>
 
       {erro && <Alerta tipo="erro">{erro}</Alerta>}
@@ -47,135 +75,212 @@ export function DashboardPage() {
 }
 
 function Conteudo({ dados }: { dados: Dashboard }) {
-  const maiorTipo = Math.max(1, ...dados.eventosPorTipo.map((t) => t.quantidade));
+  const [periodo, setPeriodo] = useState<Periodo>('todos');
+  const limite = PERIODOS.find((p) => p.valor === periodo)!.dias;
+  const proximos = dados.proximosEventos.filter(
+    ({ evento }) => limite === null || new Date(evento.dataHora).getTime() - Date.now() <= limite * 24 * 60 * 60 * 1000,
+  );
+
   return (
     <>
       <section className="grade-indicadores" aria-label="Indicadores">
+        <Indicador rotulo="Próximos eventos" icone={<IconeCalendario />} valor={String(dados.proximosEventosTotal)}>
+          <span className="selo-indicador">{dados.proximosEventosNaSemana} nesta semana</span>
+        </Indicador>
+        <Indicador rotulo="Contribuições" icone={<IconeCheck />} valor={String(dados.contribuicoesTotal)}>
+          <span className="texto-suave">
+            {dados.ultimaContribuicaoEm ? `Última ${tempoRelativo(dados.ultimaContribuicaoEm)}` : 'Nenhuma ainda'}
+          </span>
+        </Indicador>
         <Indicador
-          rotulo="Eventos abertos"
-          valor={String(dados.eventosAbertos)}
-          detalhe={`${dados.eventosEmOrganizacao} em organização`}
-        />
-        <Indicador
-          rotulo="Cobertura média"
-          valor={dados.coberturaMedia === null ? '—' : `${dados.coberturaMedia}%`}
-          detalhe={dados.coberturaMedia === null ? 'nenhum evento aberto' : 'dos eventos abertos'}
-        />
-        <Indicador
-          rotulo="Obrigatórios sem dono"
+          rotulo="Itens pendentes"
+          icone={<IconeAlerta />}
           valor={String(dados.obrigatoriosPendentes)}
-          detalhe="itens obrigatórios incompletos"
-          destaque={dados.obrigatoriosPendentes > 0}
-        />
+          tom={dados.obrigatoriosPendentes > 0 ? 'aviso' : undefined}
+        >
+          <span className={dados.obrigatoriosPendentes > 0 ? 'selo-indicador selo-aviso' : 'texto-suave'}>
+            {dados.obrigatoriosPendentes > 0 ? 'Obrigatórios sem dono' : 'Nada pendente'}
+          </span>
+        </Indicador>
         <Indicador
-          rotulo="Participantes"
-          valor={String(dados.participantesCadastrados)}
-          detalhe={`${dados.inscricoesEmEventosAbertos} inscrições em eventos abertos`}
-        />
+          rotulo="Cobertura geral"
+          icone={<IconeGrafico />}
+          valor={dados.coberturaMedia === null ? '—' : `${dados.coberturaMedia}%`}
+          tom="destaque"
+        >
+          {dados.coberturaMedia === null ? (
+            <span className="texto-suave">Nenhum evento aberto</span>
+          ) : (
+            <BarraProgresso percentual={dados.coberturaMedia} rotulo="Cobertura média dos eventos abertos" pequena />
+          )}
+        </Indicador>
       </section>
 
       <div className="grade-dashboard">
-        <section className="cartao">
-          <div className="linha-entre">
-            <h2>Próximos eventos</h2>
-            <Link to="/eventos" className="link-discreto">
-              Ver todos
-            </Link>
+        <section aria-label="Próximos eventos">
+          <div className="secao-cabecalho">
+            <h2>
+              Próximos eventos <span className="contagem-secao">{dados.proximosEventos.length}</span>
+            </h2>
+            <div className="segmentado" role="tablist" aria-label="Período">
+              {PERIODOS.map((p) => (
+                <button
+                  key={p.valor}
+                  type="button"
+                  role="tab"
+                  aria-selected={periodo === p.valor}
+                  className={periodo === p.valor ? 'ativo' : ''}
+                  onClick={() => setPeriodo(p.valor)}
+                >
+                  {p.rotulo}
+                </button>
+              ))}
+            </div>
           </div>
-          {dados.proximosEventos.length === 0 ? (
+          {proximos.length === 0 ? (
             <p className="vazio">
-              Nenhum evento por vir. <Link to="/eventos?novo=1">Crie o primeiro.</Link>
+              {dados.proximosEventos.length === 0 ? (
+                <>
+                  Nenhum evento por vir. <Link to="/eventos?novo=1">Crie o primeiro.</Link>
+                </>
+              ) : (
+                'Nenhum evento neste período.'
+              )}
             </p>
           ) : (
-            <ul className="lista-proximos">
-              {dados.proximosEventos.map(({ evento, inscritos, percentualCobertura, obrigatoriosPendentes, pronto }) => {
-                const data = partesData(evento.dataHora);
-                return (
-                  <li key={evento.id}>
-                    <Link to={`/eventos/${evento.id}`} className="proximo">
-                      <span className="evento-data evento-data-claro" aria-hidden="true">
-                        <strong>{data.dia}</strong>
-                        <span>{data.mes}</span>
-                      </span>
-                      <span className="proximo-info">
-                        <strong>{evento.nome}</strong>
-                        <span className="texto-suave">
-                          {TIPO_LABEL[evento.tipo]} · {formatarDataHora(evento.dataHora)}
-                        </span>
-                        <span className="proximo-meta">
-                          <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
-                          {evento.aceitaAlteracoes && <PrazoRestante prazo={evento.prazoAlteracoes} />}
-                          <span className="texto-suave">
-                            {inscritos} {inscritos === 1 ? 'inscrito' : 'inscritos'}
-                          </span>
-                          {obrigatoriosPendentes > 0 ? (
-                            <span className="texto-aviso">
-                              {obrigatoriosPendentes} obrigatório(s) sem dono
-                            </span>
-                          ) : (
-                            pronto && <span className="texto-sucesso">Completo</span>
-                          )}
-                        </span>
-                      </span>
-                      <span className="proximo-cobertura">
-                        <span>
-                          <strong>{percentualCobertura}%</strong> atendido
-                        </span>
-                        <BarraProgresso
-                          percentual={percentualCobertura}
-                          rotulo={`Cobertura de ${evento.nome}`}
-                          pequena
-                        />
-                      </span>
-                      <span className="proximo-seta">
-                        <IconeSeta />
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
+            <ul className="lista-cartoes-evento">
+              {proximos.map((p) => (
+                <CartaoEvento key={p.evento.id} proximo={p} />
+              ))}
             </ul>
           )}
         </section>
 
-        <section className="cartao">
-          <h2>Eventos por tipo</h2>
-          <ul className="barras-tipo" aria-label="Quantidade de eventos por tipo">
-            {dados.eventosPorTipo.map(({ tipo, quantidade }) => (
-              <li key={tipo} title={`${TIPO_LABEL[tipo]}: ${quantidade} evento(s)`}>
-                <span className="barras-tipo-rotulo">{TIPO_LABEL[tipo]}</span>
-                <span className="barras-tipo-trilho">
-                  <span
-                    className="barras-tipo-barra"
-                    style={{ width: quantidade === 0 ? 0 : `${Math.max(6, (quantidade / maiorTipo) * 100)}%` }}
-                  />
+        <section className="cartao pendencias-prioritarias" aria-label="Pendências prioritárias">
+          <div className="linha-entre">
+            <h2>Pendências prioritárias</h2>
+            {dados.obrigatoriosPendentes > 0 && (
+              <span className="selo-indicador selo-aviso">{dados.obrigatoriosPendentes} obrigatórios</span>
+            )}
+          </div>
+          <p className="texto-suave texto-pequeno">Itens obrigatórios ainda sem responsável nos eventos abertos.</p>
+          {dados.pendenciasPrioritarias.length === 0 ? (
+            <p className="texto-suave">Nenhuma pendência nos eventos que aceitam contribuições.</p>
+          ) : (
+            <ul className="lista-pendencias-prioritarias">
+              {dados.pendenciasPrioritarias.map((p) => (
+                <li key={`${p.eventoId}-${p.itemId}`}>
+                  <span className="icone-quadrado" aria-hidden="true">
+                    <IconeCaixa />
+                  </span>
+                  <span className="pendencia-prioritaria-info">
+                    <strong>{p.itemNome}</strong>
+                    <span className="texto-suave texto-pequeno">{p.eventoNome}</span>
+                    <span className="selo-indicador selo-aviso">
+                      Faltam {formatarQuantidade(p.quantidadeFaltante, p.unidade)}
+                    </span>
+                  </span>
+                  <Link to={`/eventos/${p.eventoId}`} className="botao botao-pequeno">
+                    Contribuir
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <section aria-label="Contribuições recentes">
+        <div className="secao-cabecalho">
+          <h2>Contribuições recentes</h2>
+        </div>
+        {dados.contribuicoesRecentes.length === 0 ? (
+          <p className="vazio">Nenhuma contribuição registrada ainda.</p>
+        ) : (
+          <ul className="grade-recentes">
+            {dados.contribuicoesRecentes.map((c, i) => (
+              <li key={i} className="cartao recente">
+                <span className="avatar avatar-claro" aria-hidden="true">
+                  {iniciais(c.participanteNome)}
                 </span>
-                <span className="barras-tipo-valor">{quantidade}</span>
+                <span>
+                  <strong>{c.participanteNome}</strong> vai levar {formatarQuantidade(c.quantidade, c.unidade)} de{' '}
+                  {c.itemNome} para o <Link to={`/eventos/${c.eventoId}`}>{c.eventoNome}</Link>
+                  <span className="recente-quando texto-suave">
+                    <IconeRelogio /> {tempoRelativo(c.atualizadoEm)}
+                  </span>
+                </span>
               </li>
             ))}
           </ul>
-        </section>
-      </div>
+        )}
+      </section>
     </>
+  );
+}
+
+function CartaoEvento({ proximo }: { proximo: ProximoEvento }) {
+  const { evento, inscritos, percentualCobertura, obrigatoriosPendentes } = proximo;
+  return (
+    <li className="cartao cartao-evento-visao">
+      <div className="cartao-evento-faixa">
+        <span className="tipo-evento">{TIPO_LABEL[evento.tipo]}</span>
+        <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
+      </div>
+      <div className="cartao-evento-corpo">
+        <h3>{evento.nome}</h3>
+        <div className="cartao-evento-meta">
+          <span>
+            <IconeRelogio /> {formatarDataHora(evento.dataHora)}
+          </span>
+          <span>
+            <IconePessoas /> {inscritos} {inscritos === 1 ? 'inscrito' : 'inscritos'}
+          </span>
+          {evento.aceitaAlteracoes ? (
+            <PrazoRestante prazo={evento.prazoAlteracoes} />
+          ) : (
+            <span className="texto-suave">Prazo: {formatarDataHora(evento.prazoAlteracoes)}</span>
+          )}
+        </div>
+        <div className="cartao-evento-cobertura">
+          <span className="texto-suave">
+            Cobertura dos itens
+            {obrigatoriosPendentes > 0 && ` · ${obrigatoriosPendentes} obrigatório(s) sem dono`}
+          </span>
+          <strong>{percentualCobertura}% atendido</strong>
+        </div>
+        <BarraProgresso percentual={percentualCobertura} rotulo={`Cobertura de ${evento.nome}`} pequena />
+        <Link to={`/eventos/${evento.id}`} className="botao botao-primario botao-bloco">
+          Ver evento <IconeSeta />
+        </Link>
+      </div>
+    </li>
   );
 }
 
 function Indicador({
   rotulo,
+  icone,
   valor,
-  detalhe,
-  destaque,
+  tom,
+  children,
 }: {
   rotulo: string;
+  icone: ReactNode;
   valor: string;
-  detalhe: string;
-  destaque?: boolean;
+  tom?: 'aviso' | 'destaque';
+  children: ReactNode;
 }) {
   return (
-    <div className={`cartao indicador-cartao ${destaque ? 'indicador-destaque' : ''}`}>
-      <span className="indicador-rotulo">{rotulo}</span>
+    <div className={`cartao indicador-cartao ${tom ? `indicador-${tom}` : ''}`}>
+      <div className="indicador-topo">
+        <span className="indicador-rotulo">{rotulo}</span>
+        <span className="icone-quadrado" aria-hidden="true">
+          {icone}
+        </span>
+      </div>
       <span className="indicador-valor">{valor}</span>
-      <span className="indicador-detalhe">{detalhe}</span>
+      <div className="indicador-detalhe">{children}</div>
     </div>
   );
 }
