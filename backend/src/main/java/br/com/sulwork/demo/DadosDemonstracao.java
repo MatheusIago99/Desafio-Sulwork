@@ -64,6 +64,8 @@ public class DadosDemonstracao implements ApplicationRunner {
         this.contribuicaoService = contribuicaoService;
     }
 
+    // CPFs fictícios: números de exemplo amplamente usados em documentação e testes.
+
     @Override
     public void run(ApplicationArguments args) {
         if (eventoRepository.count() > 0) {
@@ -73,9 +75,9 @@ public class DadosDemonstracao implements ApplicationRunner {
 
         long ana = participante("Ana Souza", "52998224725", null, LACTOSE);
         long bruno = participante("Bruno Lima", "11144477735", null);
-        long carla = participante("Carla Mendes", "39053344705", "Vegetariana", GLUTEN);
-        long diego = participante("Diego Rocha", "86288366757", null, AMENDOIM);
-        participante("Elisa Martins", "71428793860", null);
+        long carla = participante("Carla Mendes", "12345678909", "Vegetariana", GLUTEN);
+        long diego = participante("Diego Rocha", "98765432100", null, AMENDOIM);
+        participante("Elisa Martins", "00000000191", null);
 
         LocalDateTime agora = eventoService.agora().truncatedTo(ChronoUnit.HOURS);
 
