@@ -2,17 +2,21 @@ package br.com.sulwork.contribuicao;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import br.com.sulwork.common.exception.ConflitoException;
 import br.com.sulwork.common.exception.RecursoNaoEncontradoException;
 import br.com.sulwork.common.exception.RegraNegocioException;
 import br.com.sulwork.contribuicao.dto.ContribuicaoRequest;
+import br.com.sulwork.contribuicao.dto.MinhaContribuicaoResponse;
 import br.com.sulwork.evento.Evento;
 import br.com.sulwork.evento.EventoService;
 import br.com.sulwork.inscricao.Inscricao;
 import br.com.sulwork.inscricao.InscricaoRepository;
 import br.com.sulwork.item.Item;
 import br.com.sulwork.item.ItemRepository;
+import br.com.sulwork.participante.ParticipanteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +37,16 @@ public class ContribuicaoService {
     private final ContribuicaoRepository contribuicaoRepository;
     private final ItemRepository itemRepository;
     private final InscricaoRepository inscricaoRepository;
+    private final ParticipanteRepository participanteRepository;
     private final EventoService eventoService;
 
     public ContribuicaoService(ContribuicaoRepository contribuicaoRepository, ItemRepository itemRepository,
-                               InscricaoRepository inscricaoRepository, EventoService eventoService) {
+                               InscricaoRepository inscricaoRepository, ParticipanteRepository participanteRepository,
+                               EventoService eventoService) {
         this.contribuicaoRepository = contribuicaoRepository;
         this.itemRepository = itemRepository;
         this.inscricaoRepository = inscricaoRepository;
+        this.participanteRepository = participanteRepository;
         this.eventoService = eventoService;
     }
 
@@ -47,6 +54,29 @@ public class ContribuicaoService {
     public List<Contribuicao> listar(Long eventoId) {
         eventoService.buscar(eventoId);
         return contribuicaoRepository.listarPorEvento(eventoId);
+    }
+
+    /**
+     * Tudo o que um participante se comprometeu a levar, em todos os eventos. Só leitura:
+     * alterar e remover continuam pelos endpoints do evento, com as mesmas regras.
+     */
+    @Transactional(readOnly = true)
+    public List<MinhaContribuicaoResponse> listarDoParticipante(Long participanteId) {
+        if (!participanteRepository.existsById(participanteId)) {
+            throw new RecursoNaoEncontradoException("Participante", participanteId);
+        }
+        List<Contribuicao> contribuicoes = contribuicaoRepository.listarDoParticipante(participanteId);
+        if (contribuicoes.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Integer> totalPorItem = contribuicaoRepository
+                .somarPorItens(contribuicoes.stream().map(c -> c.getItem().getId()).toList())
+                .stream()
+                .collect(Collectors.toMap(l -> (Long) l[0], l -> ((Number) l[1]).intValue()));
+        LocalDateTime agora = eventoService.agora();
+        return contribuicoes.stream()
+                .map(c -> MinhaContribuicaoResponse.de(c, totalPorItem.getOrDefault(c.getItem().getId(), 0), agora))
+                .toList();
     }
 
     @Transactional
