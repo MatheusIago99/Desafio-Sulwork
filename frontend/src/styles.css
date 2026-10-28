@@ -608,6 +608,27 @@ input[type='checkbox'] {
   color: var(--info);
 }
 
+.badge-status-prazo-encerrado {
+  background: var(--aviso-claro);
+  color: var(--aviso);
+}
+
+.prazo-restante {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.prazo-restante-urgente {
+  border-color: #f1c7c3;
+  background: var(--erro-claro);
+  color: var(--erro);
+}
+
 .badge-status-cancelado {
   background: var(--erro-claro);
   color: var(--erro);

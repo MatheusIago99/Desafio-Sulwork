@@ -7,6 +7,7 @@ import { CoberturaResumo } from '../components/CoberturaResumo';
 import { EventoForm } from '../components/EventoForm';
 import { Modal } from '../components/Modal';
 import { PendenciasLista } from '../components/PendenciasLista';
+import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
 import { ACAO_STATUS, TIPO_LABEL, formatarDataHora } from '../utils/format';
@@ -118,14 +119,15 @@ export function EventoPage() {
       <header className="evento-cabecalho">
         <div>
           <div className="linha-inline">
-            <StatusBadge status={evento.status} />
+            <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
             <span className="evento-tipo">{TIPO_LABEL[evento.tipo]}</span>
           </div>
           <h1>{evento.nome}</h1>
           {evento.descricao && <p>{evento.descricao}</p>}
           <p>
             <strong>{formatarDataHora(evento.dataHora)}</strong>
-            <span className="texto-suave"> · alterações até {formatarDataHora(evento.prazoAlteracoes)}</span>
+            <span className="texto-suave"> · alterações até {formatarDataHora(evento.prazoAlteracoes)}</span>{' '}
+            {evento.aceitaAlteracoes && <PrazoRestante prazo={evento.prazoAlteracoes} />}
           </p>
         </div>
         <div className="evento-acoes">

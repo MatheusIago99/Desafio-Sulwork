@@ -5,6 +5,7 @@ import type { Dashboard, Participante } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { BarraProgresso } from '../components/BarraProgresso';
 import { IconeSeta } from '../components/Icones';
+import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
 import { TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
@@ -102,7 +103,8 @@ function Conteudo({ dados }: { dados: Dashboard }) {
                           {TIPO_LABEL[evento.tipo]} · {formatarDataHora(evento.dataHora)}
                         </span>
                         <span className="proximo-meta">
-                          <StatusBadge status={evento.status} />
+                          <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
+                          {evento.aceitaAlteracoes && <PrazoRestante prazo={evento.prazoAlteracoes} />}
                           <span className="texto-suave">
                             {inscritos} {inscritos === 1 ? 'inscrito' : 'inscritos'}
                           </span>

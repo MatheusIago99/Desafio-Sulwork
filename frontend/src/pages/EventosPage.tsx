@@ -6,6 +6,7 @@ import { Alerta } from '../components/Alerta';
 import { EventoForm } from '../components/EventoForm';
 import { IconeBusca, IconeMais, IconeSeta } from '../components/Icones';
 import { Modal } from '../components/Modal';
+import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
 import { STATUS_LABEL, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
 
@@ -142,12 +143,15 @@ export function EventosPage() {
                     </td>
                     <td className="nowrap">{TIPO_LABEL[evento.tipo]}</td>
                     <td>
-                      <StatusBadge status={evento.status} />
+                      <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
                     </td>
                     <td className="texto-suave texto-pequeno">
-                      {evento.status === 'ABERTO' && evento.prazoVencido
-                        ? 'Prazo encerrado'
-                        : formatarDataHora(evento.prazoAlteracoes)}
+                      {formatarDataHora(evento.prazoAlteracoes)}
+                      {evento.aceitaAlteracoes && (
+                        <div>
+                          <PrazoRestante prazo={evento.prazoAlteracoes} />
+                        </div>
+                      )}
                     </td>
                     <td className="acoes-tabela texto-suave">
                       <IconeSeta />
