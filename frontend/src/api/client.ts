@@ -10,6 +10,7 @@ import type {
   MinhaContribuicao,
   ItemInput,
   Participante,
+  ParticipanteAtualizacao,
   ParticipanteInput,
   Pendencias,
   ResumoRestricoes,
@@ -86,7 +87,7 @@ export const api = {
     listar: (busca?: string) =>
       get<Participante[]>(`/participantes${busca ? `?busca=${encodeURIComponent(busca)}` : ''}`),
     criar: (dados: ParticipanteInput) => post<Participante>('/participantes', dados),
-    atualizar: (id: number, dados: ParticipanteInput) => put<Participante>(`/participantes/${id}`, dados),
+    atualizar: (id: number, dados: ParticipanteAtualizacao) => put<Participante>(`/participantes/${id}`, dados),
     excluir: (id: number) => del(`/participantes/${id}`),
     contribuicoes: (id: number) => get<MinhaContribuicao[]>(`/participantes/${id}/contribuicoes`),
   },

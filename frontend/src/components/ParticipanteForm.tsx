@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { Participante, ParticipanteInput } from '../api/types';
 import { cpfValido, mascararCpf, somenteDigitos } from '../utils/cpf';
-import { formatarCpf } from '../utils/format';
 import { SeletorAlergenos } from './Alergenos';
 
 interface Props {
@@ -12,18 +11,19 @@ interface Props {
 
 export function ParticipanteForm({ inicial, onSalvar, onCancelar }: Props) {
   const [nome, setNome] = useState(inicial?.nome ?? '');
-  const [cpf, setCpf] = useState(inicial ? formatarCpf(inicial.cpf) : '');
+  const [cpf, setCpf] = useState(inicial ? inicial.cpfMascarado : '');
   const [restricoes, setRestricoes] = useState(inicial?.restricoes ?? []);
   const [observacoes, setObservacoes] = useState(inicial?.observacoesAlimentares ?? '');
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
-  const cpfCompleto = somenteDigitos(cpf).length === 11;
+  // Na edição o campo mostra o CPF mascarado (desabilitado) e não é validado nem enviado.
+  const cpfCompleto = !inicial && somenteDigitos(cpf).length === 11;
   const cpfInvalido = cpfCompleto && !cpfValido(cpf);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
-    if (!cpfValido(cpf)) {
+    if (!inicial && !cpfValido(cpf)) {
       setErro('Informe um CPF válido com 11 dígitos.');
       return;
     }

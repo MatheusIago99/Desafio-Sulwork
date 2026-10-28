@@ -78,6 +78,3 @@ export function formatarQuantidade(quantidade: number, unidade: string | null): 
   return unidade ? `${quantidade} ${unidade}` : String(quantidade);
 }
 
-export function formatarCpf(cpf: string): string {
-  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}

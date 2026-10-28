@@ -6,7 +6,6 @@ import { AlergenoChips } from '../components/Alergenos';
 import { IconeBusca, IconeMais } from '../components/Icones';
 import { Modal } from '../components/Modal';
 import { ParticipanteForm } from '../components/ParticipanteForm';
-import { formatarCpf } from '../utils/format';
 import { iniciais } from '../utils/iniciais';
 
 export function ParticipantesPage() {
@@ -31,7 +30,10 @@ export function ParticipantesPage() {
 
   const salvar = async (dados: ParticipanteInput) => {
     if (editando === 'novo') await api.participantes.criar(dados);
-    else if (editando) await api.participantes.atualizar(editando.id, dados);
+    else if (editando) {
+      const { nome, restricoes, observacoesAlimentares } = dados;
+      await api.participantes.atualizar(editando.id, { nome, restricoes, observacoesAlimentares });
+    }
     setEditando(null);
     await carregar();
   };
@@ -115,7 +117,7 @@ export function ParticipantesPage() {
                       <strong>{p.nome}</strong>
                     </span>
                   </td>
-                  <td className="nowrap">{formatarCpf(p.cpf)}</td>
+                  <td className="nowrap">{p.cpfMascarado}</td>
                   <td>
                     <AlergenoChips alergenos={p.restricoes} vazio={p.observacoesAlimentares ? '' : 'Nenhuma'} />
                     {p.observacoesAlimentares && <div className="texto-suave">{p.observacoesAlimentares}</div>}

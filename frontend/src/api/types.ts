@@ -36,7 +36,8 @@ export interface EventoInput {
 export interface Participante {
   id: number;
   nome: string;
-  cpf: string;
+  /** A API nunca devolve o CPF completo, só a versão mascarada (ex.: ***.982.247-**). */
+  cpfMascarado: string;
   restricoes: Alergeno[];
   observacoesAlimentares: string | null;
 }
@@ -47,6 +48,9 @@ export interface ParticipanteInput {
   restricoes: Alergeno[];
   observacoesAlimentares: string;
 }
+
+/** Na edição o CPF não é enviado: ele identifica o colaborador e não muda. */
+export type ParticipanteAtualizacao = Omit<ParticipanteInput, 'cpf'>;
 
 export interface Inscricao {
   id: number;
