@@ -25,10 +25,11 @@ Aplicação para organizar os eventos de alimentação da Sulwork (cafés da man
 7. [Ambiguidades identificadas e como foram tratadas](#ambiguidades-identificadas-e-como-foram-tratadas)
 8. [Cálculo da cobertura](#cálculo-da-cobertura)
 9. [Restrições alimentares e alérgenos](#restrições-alimentares-e-alérgenos)
-10. [Feature livre: “O que falta?”](#feature-livre-o-que-falta)
-11. [API](#api)
-12. [Testes](#testes)
-13. [Uso de IA](#uso-de-ia)
+10. [Dados pessoais e LGPD](#dados-pessoais-e-lgpd)
+11. [Feature livre: “O que falta?”](#feature-livre-o-que-falta)
+12. [API](#api)
+13. [Testes](#testes)
+14. [Uso de IA](#uso-de-ia)
 
 ---
 
@@ -245,7 +246,7 @@ O que cada status permite:
 ### Participantes e inscrições
 
 - O participante é um **colaborador global**: é cadastrado uma vez (CPF único) e pode se inscrever em vários eventos. A inscrição é única por evento, garantida no service (mensagem clara) e por `UNIQUE` no banco (proteção contra corrida).
-- O CPF é aceito com ou sem máscara, armazenado só com dígitos e validado pelos dígitos verificadores. Sequências repetidas (`111.111.111-11`) são rejeitadas. **O CPF não pode ser alterado**, pois identifica o colaborador.
+- O CPF é aceito com ou sem máscara, armazenado só com dígitos e validado pelos dígitos verificadores. Sequências repetidas (`111.111.111-11`) são rejeitadas. **O CPF não pode ser alterado**, pois identifica o colaborador, e **nunca é devolvido completo** pela API (ver [Dados pessoais e LGPD](#dados-pessoais-e-lgpd)).
 - Para contribuir, é preciso estar inscrito no evento. Cancelar a inscrição (dentro da janela) **remove junto as contribuições** da pessoa naquele evento, porque quem não vai não leva nada.
 - Participantes inscritos em algum evento não podem ser excluídos (preserva o histórico).
 
@@ -305,6 +306,28 @@ A resposta traz o percentual geral, `obrigatoriosCompletos/obrigatoriosTotal`, `
   - nos itens e participantes: chips com os alérgenos e as restrições.
 - O cruzamento é **informativo e não bloqueia** contribuições (ver ambiguidade 9).
 
+## Dados pessoais e LGPD
+
+O sistema trata dados pessoais de colaboradores, então foi pensado com a LGPD (Lei 13.709/2018) em mente, dentro do escopo do desafio.
+
+| Dado | Por que é coletado |
+|---|---|
+| Nome | Identificar quem vai e quem leva cada item |
+| CPF | Identificar o colaborador de forma única e evitar cadastro duplicado |
+| Restrições alimentares e observações | Segurança alimentar: avisar quem vai levar um item que alguém inscrito não pode consumir |
+
+- **Restrições alimentares são dado sensível** (dado referente à saúde, Art. 5º, II). São usadas **só** para a finalidade de segurança alimentar do evento (Art. 6º, I e Art. 11) e, nos eventos, entram no cruzamento apenas as restrições dos inscritos.
+- **Minimização do CPF** (Art. 6º, III): o CPF é recebido no cadastro e usado na busca, mas **a API nunca o devolve completo**. As respostas trazem só `cpfMascarado` (ex.: `***.982.247-**`), e a edição do participante não recebe nem exibe o CPF. Há testes de integração garantindo que o número completo não aparece nas listagens de participantes nem de inscrições.
+- **Dados de demonstração são fictícios:** os CPFs usados no `SEED_DEMO` são números de exemplo amplamente usados em documentação e testes, não de pessoas reais.
+- **Exclusão:** um participante sem inscrições pode ser excluído, o que remove seus dados.
+
+**Limitações conhecidas e o que seria necessário em produção.** Como o desafio não pede autenticação, qualquer pessoa com acesso à aplicação vê nomes e restrições dos inscritos. Em produção, seriam necessários:
+
+- login (ex.: SSO corporativo) com controle de acesso: restrições visíveis só para organizadores e para quem decide o que levar;
+- registro do consentimento (ou outra base legal definida pela empresa) no cadastro das restrições, com texto explicando o uso;
+- política de retenção: anonimizar ou apagar restrições e inscrições depois que o evento é realizado;
+- atendimento aos direitos do titular (acesso, correção e eliminação, Art. 18) e registro de quem acessou os dados.
+
 ## Feature livre: “O que falta?”
 
 **Problema.** Numa planilha ou lista de itens, quem quer ajudar precisa varrer tudo para descobrir o que ainda falta, o que é mais importante e se aquilo serve para todo mundo. O resultado comum é excesso de opcionais e falta de itens essenciais.
@@ -335,7 +358,7 @@ Documentação interativa completa no **Swagger UI** (`/swagger-ui.html`). Resum
 | GET/POST | `/api/eventos` | Lista (filtro `?status=`) / cria (nasce em RASCUNHO) |
 | GET/PUT/DELETE | `/api/eventos/{id}` | Detalha / edita / exclui (só rascunho) |
 | PATCH | `/api/eventos/{id}/status` | Transição de status |
-| GET/POST/PUT/DELETE | `/api/participantes[/{id}]` | CRUD de participantes (busca `?busca=` por nome ou CPF) |
+| GET/POST/PUT/DELETE | `/api/participantes[/{id}]` | CRUD de participantes (busca `?busca=` por nome ou CPF; a resposta traz só `cpfMascarado` e o `PUT` não altera o CPF) |
 | GET/POST | `/api/eventos/{id}/inscricoes` | Lista / inscreve participante |
 | DELETE | `/api/eventos/{id}/inscricoes/{participanteId}` | Cancela inscrição (remove contribuições da pessoa) |
 | GET/POST/PUT/DELETE | `/api/eventos/{id}/categorias[/{categoriaId}]` | Categorias com meta opcional |
@@ -362,16 +385,16 @@ Exemplo de erro de regra de negócio (`422`):
 
 ## Testes
 
-**Backend: 112 testes** (`./mvnw verify`).
+**Backend: 116 testes** (`./mvnw verify`).
 
 | Tipo | Classes | O que cobrem |
 |---|---|---|
 | Unitários (JUnit 5) | `StatusEventoTest`, `EventoTest` | Tabela de transições, guardas de tempo, janela de alterações |
-| | `CpfTest` | Dígitos verificadores, máscara, sequências repetidas |
+| | `CpfTest` | Dígitos verificadores, máscara, sequências repetidas, mascaramento para exibição |
 | | `ContribuicaoServiceTest` (Mockito) | Limite, inscrição obrigatória, duplicidade, prazo, status, alteração de quantidade |
 | | `CalculadoraCoberturaTest` | Pesos, razão × unidades, metas, metas inatingíveis, arredondamento, "pronto" |
 | | `AnalisadorRestricoesTest` | Agrupamento de restrições, conflitos por item, observações |
-| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
+| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o CPF que nunca sai completo nas respostas, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
 
 **Frontend: 51 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, visão geral (indicadores, pendências prioritárias, contribuições recentes e ausência de números inventados sem dados), modal (foco, Esc e regressão do foco ao digitar), Minhas contribuições (agrupamento e bloqueio após o prazo), selo de status e tempo até o prazo, formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
 
