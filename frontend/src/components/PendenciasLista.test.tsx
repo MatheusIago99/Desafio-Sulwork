@@ -83,8 +83,8 @@ describe('PendenciasLista ("O que falta?")', () => {
     },
   );
 
-  it('comemora quando nada falta', () => {
+  it('informa quando nada falta', () => {
     render(<PendenciasLista pendencias={pendencias([])} participanteSelecionado participanteInscrito onAssumir={vi.fn()} />);
-    expect(screen.getByText(/Nada faltando/)).toBeInTheDocument();
+    expect(screen.getByText(/já têm responsável/)).toBeInTheDocument();
   });
 });

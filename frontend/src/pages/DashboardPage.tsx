@@ -7,7 +7,7 @@ import { BarraProgresso } from '../components/BarraProgresso';
 import { IconeSeta } from '../components/Icones';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { TIPO_ICONE, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+import { TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
 
 export function DashboardPage() {
   const { participanteId } = useParticipanteAtual();
@@ -99,7 +99,7 @@ function Conteudo({ dados }: { dados: Dashboard }) {
                       <span className="proximo-info">
                         <strong>{evento.nome}</strong>
                         <span className="texto-suave">
-                          {TIPO_ICONE[evento.tipo]} {TIPO_LABEL[evento.tipo]} · {formatarDataHora(evento.dataHora)}
+                          {TIPO_LABEL[evento.tipo]} · {formatarDataHora(evento.dataHora)}
                         </span>
                         <span className="proximo-meta">
                           <StatusBadge status={evento.status} />
@@ -111,13 +111,13 @@ function Conteudo({ dados }: { dados: Dashboard }) {
                               {obrigatoriosPendentes} obrigatório(s) sem dono
                             </span>
                           ) : (
-                            pronto && <span className="texto-sucesso">Pronto</span>
+                            pronto && <span className="texto-sucesso">Completo</span>
                           )}
                         </span>
                       </span>
                       <span className="proximo-cobertura">
                         <span>
-                          <strong>{percentualCobertura}%</strong> coberto
+                          <strong>{percentualCobertura}%</strong> atendido
                         </span>
                         <BarraProgresso
                           percentual={percentualCobertura}
@@ -141,9 +141,7 @@ function Conteudo({ dados }: { dados: Dashboard }) {
           <ul className="barras-tipo" aria-label="Quantidade de eventos por tipo">
             {dados.eventosPorTipo.map(({ tipo, quantidade }) => (
               <li key={tipo} title={`${TIPO_LABEL[tipo]}: ${quantidade} evento(s)`}>
-                <span className="barras-tipo-rotulo">
-                  <span aria-hidden="true">{TIPO_ICONE[tipo]}</span> {TIPO_LABEL[tipo]}
-                </span>
+                <span className="barras-tipo-rotulo">{TIPO_LABEL[tipo]}</span>
                 <span className="barras-tipo-trilho">
                   <span
                     className="barras-tipo-barra"

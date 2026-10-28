@@ -46,12 +46,12 @@ export function CoberturaResumo({ cobertura }: { cobertura: Cobertura }) {
         <AnelProgresso percentual={cobertura.percentualGeral} />
         <div className="cobertura-resumo">
           {cobertura.pronto ? (
-            <span className="badge badge-pronto">Pronto para acontecer</span>
+            <span className="badge badge-pronto">Completo</span>
           ) : (
-            <span className="badge badge-pendente">Ainda falta coisa</span>
+            <span className="badge badge-pendente">Incompleto</span>
           )}
-          <h2>Cobertura do evento</h2>
-          <p className="texto-suave">das necessidades já têm quem leve</p>
+          <h2>Cobertura</h2>
+          <p className="texto-suave">das necessidades do evento atendidas</p>
           <div className="cobertura-indicadores">
             <span className="indicador">
               <strong>

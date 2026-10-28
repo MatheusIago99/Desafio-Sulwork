@@ -52,7 +52,7 @@ export function AbaRestricoes({ resumo }: { resumo: ResumoRestricoes }) {
         )}
         {itensComConflito.length > 0 && (
           <p className="texto-suave">
-            Dica: considere incluir alternativas sem esses alérgenos para que todos possam comer.
+            Considere incluir alternativas sem esses alérgenos.
           </p>
         )}
       </section>

@@ -26,15 +26,6 @@ export const TIPO_LABEL: Record<TipoEvento, string> = {
   OUTRO: 'Outro',
 };
 
-export const TIPO_ICONE: Record<TipoEvento, string> = {
-  CAFE_DA_MANHA: '☕',
-  ALMOCO: '🍽️',
-  LANCHE: '🥪',
-  CHURRASCO: '🔥',
-  CONFRATERNIZACAO: '🎉',
-  OUTRO: '🍴',
-};
-
 export const ALERGENO_LABEL: Record<Alergeno, string> = {
   GLUTEN: 'Glúten',
   LACTOSE: 'Lactose',

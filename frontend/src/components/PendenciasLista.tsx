@@ -17,7 +17,7 @@ interface Props {
  */
 export function PendenciasLista({ pendencias, participanteSelecionado, participanteInscrito, onAssumir }: Props) {
   if (pendencias.totalPendentes === 0) {
-    return <p className="vazio">Nada faltando! Todos os itens já têm quem leve. 🎉</p>;
+    return <p className="vazio">Todos os itens já têm responsável.</p>;
   }
 
   let motivoBloqueio: string | null = null;
@@ -90,7 +90,7 @@ function PendenciaItem({
         <AlergenoChips alergenos={item.alergenos} />
         {item.conflitos.map((c) => (
           <span key={c.alergeno} className="texto-aviso">
-            ⚠ {ALERGENO_LABEL[c.alergeno]}: restrição de {c.participantes.join(', ')}
+            {ALERGENO_LABEL[c.alergeno]}: restrição de {c.participantes.join(', ')}
           </span>
         ))}
         {item.minhaContribuicao !== null && (

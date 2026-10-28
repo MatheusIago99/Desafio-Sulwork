@@ -7,7 +7,7 @@ import { EventoForm } from '../components/EventoForm';
 import { IconeBusca, IconeMais, IconeSeta } from '../components/Icones';
 import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
-import { STATUS_LABEL, TIPO_ICONE, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+import { STATUS_LABEL, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
 
 /** Busca sem diferenciar maiúsculas nem acentos. */
 function normalizar(texto: string): string {
@@ -140,9 +140,7 @@ export function EventosPage() {
                       </Link>
                       <div className="texto-suave texto-pequeno">{formatarDataHora(evento.dataHora)}</div>
                     </td>
-                    <td className="nowrap">
-                      <span aria-hidden="true">{TIPO_ICONE[evento.tipo]}</span> {TIPO_LABEL[evento.tipo]}
-                    </td>
+                    <td className="nowrap">{TIPO_LABEL[evento.tipo]}</td>
                     <td>
                       <StatusBadge status={evento.status} />
                     </td>

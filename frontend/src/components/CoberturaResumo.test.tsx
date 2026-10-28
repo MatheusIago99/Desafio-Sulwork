@@ -23,7 +23,7 @@ describe('CoberturaResumo', () => {
     expect(screen.getByText('72%')).toBeInTheDocument();
     expect(screen.getByText('2/3')).toBeInTheDocument();
     expect(screen.getByText('0/1')).toBeInTheDocument();
-    expect(screen.getByText('Ainda falta coisa')).toBeInTheDocument();
+    expect(screen.getByText('Incompleto')).toBeInTheDocument();
     expect(screen.getByText(/pela meta: 6\/10/)).toBeInTheDocument();
     expect(screen.getByText(/nunca será atingida/)).toBeInTheDocument();
     expect(screen.queryByText('Vazia')).not.toBeInTheDocument();
@@ -32,6 +32,6 @@ describe('CoberturaResumo', () => {
 
   it('indica quando o evento está pronto', () => {
     render(<CoberturaResumo cobertura={cobertura({ percentualGeral: 90, pronto: true })} />);
-    expect(screen.getByText('Pronto para acontecer')).toBeInTheDocument();
+    expect(screen.getByText('Completo')).toBeInTheDocument();
   });
 });
