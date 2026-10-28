@@ -568,22 +568,6 @@ input[type='checkbox'] {
   align-items: center;
 }
 
-.filtro {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--texto-suave);
-}
-
-.busca {
-  width: 100%;
-  max-width: 380px;
-  border-radius: 999px;
-  padding-left: 1rem;
-}
-
 /* ==========================================================================
    Badges e chips
    ========================================================================== */
