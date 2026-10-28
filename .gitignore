@@ -16,3 +16,6 @@ frontend/coverage/
 
 # Env
 .env
+
+# Cache do compilador TypeScript
+*.tsbuildinfo
