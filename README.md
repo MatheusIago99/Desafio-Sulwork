@@ -171,7 +171,7 @@ Decisões de arquitetura:
 src
 ├── api          cliente REST tipado e tipos da API
 ├── components   componentes reutilizáveis (cobertura, lista O que falta, formulários...)
-├── pages        Dashboard, Eventos (tabela com busca e filtros), Evento (com abas) e Participantes
+├── pages        Dashboard, Eventos (tabela com busca e filtros), Evento (com abas), Minhas contribuições e Participantes
 └── utils        CPF (máscara/validação) e formatação
 ```
 
@@ -234,6 +234,7 @@ O que cada status permite:
 > **Participantes só alteram inscrições e contribuições quando o evento está `ABERTO` e o prazo para alterações ainda não venceu.** As duas condições são necessárias e independentes.
 
 - **O prazo vale sozinho, sem job agendado.** Ele é verificado em cada requisição usando o `Clock` da aplicação. Assim não existe janela em que o prazo venceu mas um job ainda não rodou, e o comportamento é determinístico nos testes.
+- **A interface deixa a regra visível:** com o evento aberto, aparece quanto falta para o prazo ("Encerra em 2 dias", em destaque nas últimas 24 horas); depois que o prazo vence, o selo muda para "Aberto · prazo encerrado".
 - **O status não muda automaticamente quando o prazo vence.** O status representa uma decisão do organizador; o prazo é uma trava automática. Um evento `ABERTO` com prazo vencido é exibido como "prazo encerrado", e o organizador pode **estender o prazo** (editando o evento) ou **encerrá-lo**.
 - **Encerrar antes do prazo é permitido**: o organizador pode fechar a lista mais cedo, e as alterações param na hora, mesmo dentro do prazo.
 - **Reabrir só é permitido com prazo vigente**: não faz sentido reabrir um evento em que ninguém mais pode contribuir.
@@ -256,7 +257,7 @@ O que cada status permite:
 
 ### Premissas
 
-- **Sem autenticação.** O desafio não pede controle de acesso. Na interface, o seletor **"Você é"** (no rodapé do menu lateral; no celular, no topo) define o participante atual, usado na ação "Eu levo". Qualquer pessoa pode agir como organizador. Em produção, isso seria substituído por login (ex.: SSO corporativo), com papéis de organizador e participante.
+- **Sem autenticação.** O desafio não pede controle de acesso. Na interface, o seletor **"Você é"** (no rodapé do menu lateral; no celular, no topo) define o participante atual, usado na ação "Eu levo" e na tela "Minhas contribuições". Qualquer pessoa pode agir como organizador. Em produção, isso seria substituído por login (ex.: SSO corporativo), com papéis de organizador e participante.
 - **Quantidades são inteiras**, com unidade opcional em texto (ex.: "litros", "pacotes"). Frações (1,5 kg) podem ser representadas trocando a unidade (1500 g).
 - **Datas são horário local de São Paulo** (`LocalDateTime`), já que todos os eventos são presenciais na empresa.
 
@@ -344,6 +345,7 @@ Documentação interativa completa no **Swagger UI** (`/swagger-ui.html`). Resum
 | GET | `/api/eventos/{id}/restricoes` | Restrições × alérgenos |
 | GET | `/api/eventos/{id}/pendencias` | Feature "O que falta?" (`?participanteId=` opcional) |
 | POST | `/api/eventos/{id}/pendencias/{itemId}/assumir` | "Eu levo" |
+| GET | `/api/participantes/{id}/contribuicoes` | O que o participante vai levar em todos os eventos, e se ainda pode alterar |
 | GET | `/api/dashboard` | Indicadores: eventos abertos, cobertura média, obrigatórios pendentes, eventos por tipo e próximos eventos |
 | GET | `/api/alergenos` | Vocabulário de alérgenos |
 
@@ -360,7 +362,7 @@ Exemplo de erro de regra de negócio (`422`):
 
 ## Testes
 
-**Backend: 107 testes** (`./mvnw verify`).
+**Backend: 111 testes** (`./mvnw verify`).
 
 | Tipo | Classes | O que cobrem |
 |---|---|---|
@@ -369,9 +371,9 @@ Exemplo de erro de regra de negócio (`422`):
 | | `ContribuicaoServiceTest` (Mockito) | Limite, inscrição obrigatória, duplicidade, prazo, status, alteração de quantidade |
 | | `CalculadoraCoberturaTest` | Pesos, razão × unidades, metas, metas inatingíveis, arredondamento, "pronto" |
 | | `AnalisadorRestricoesTest` | Agrupamento de restrições, conflitos por item, observações |
-| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
+| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
 
-**Frontend: 31 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, dashboard (indicadores e ausência de cobertura sem eventos abertos), modal (foco, Esc e regressão do foco ao digitar), formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
+**Frontend: 45 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, dashboard (indicadores e ausência de cobertura sem eventos abertos), modal (foco, Esc e regressão do foco ao digitar), Minhas contribuições (agrupamento e bloqueio após o prazo), selo de status e tempo até o prazo, formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
 
 ## Uso de IA
 
