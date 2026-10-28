@@ -36,16 +36,46 @@ class EventoIT extends IntegrationTest {
     void deveValidarCamposObrigatorios() throws Exception {
         postJson(mockMvc, "/api/eventos", "{\"nome\": \"\"}")
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.campos", hasSize(4)));
+                .andExpect(jsonPath("$.campos", hasSize(5)));
     }
 
     @Test
     void deveRejeitarPrazoPosteriorAoEvento() throws Exception {
         postJson(mockMvc, "/api/eventos", """
-                {"nome": "Café", "tipo": "CAFE_DA_MANHA",
+                {"nome": "Café", "descricao": "Café do time", "tipo": "CAFE_DA_MANHA",
                  "dataHora": "2026-03-20T09:00:00", "prazoAlteracoes": "2026-03-21T09:00:00"}
                 """)
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void deveExigirDescricao() throws Exception {
+        postJson(mockMvc, "/api/eventos", """
+                {"nome": "Café", "descricao": "   ", "tipo": "CAFE_DA_MANHA",
+                 "dataHora": "2026-03-20T09:00:00", "prazoAlteracoes": "2026-03-18T18:00:00"}
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("descricao"));
+    }
+
+    @Test
+    void deveRejeitarPrazoJaVencido() throws Exception {
+        postJson(mockMvc, "/api/eventos", """
+                {"nome": "Café", "descricao": "Café do time", "tipo": "CAFE_DA_MANHA",
+                 "dataHora": "2026-03-20T09:00:00", "prazoAlteracoes": "2026-03-09T18:00:00"}
+                """)
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.mensagem", containsString("futuro")));
+    }
+
+    @Test
+    void deveExcluirRascunhoComCategoriasEItens() throws Exception {
+        long id = criarEvento(mockMvc, "Rascunho");
+        long categoria = criarCategoria(mockMvc, id, "Bebidas", 5);
+        criarItem(mockMvc, id, categoria, "Suco", 3, true, "LACTOSE");
+
+        mockMvc.perform(delete("/api/eventos/" + id)).andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/eventos/" + id)).andExpect(status().isNotFound());
     }
 
     @Test

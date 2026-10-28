@@ -39,7 +39,7 @@ public class EventoService {
 
     @Transactional
     public Evento criar(EventoRequest req) {
-        Evento evento = new Evento(req.nome().trim(), req.descricao(), req.tipo(),
+        Evento evento = new Evento(req.nome().trim(), req.descricao().trim(), req.tipo(),
                 req.dataHora(), req.prazoAlteracoes(), agora());
         return eventoRepository.save(evento);
     }
@@ -47,7 +47,7 @@ public class EventoService {
     @Transactional
     public Evento atualizar(Long id, EventoRequest req) {
         Evento evento = buscar(id);
-        evento.atualizar(req.nome().trim(), req.descricao(), req.tipo(),
+        evento.atualizar(req.nome().trim(), req.descricao().trim(), req.tipo(),
                 req.dataHora(), req.prazoAlteracoes(), agora());
         return evento;
     }

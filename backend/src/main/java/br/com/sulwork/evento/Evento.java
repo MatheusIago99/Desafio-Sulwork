@@ -23,7 +23,7 @@ public class Evento {
     @Column(nullable = false, length = 120)
     private String nome;
 
-    @Column(length = 1000)
+    @Column(nullable = false, length = 1000)
     private String descricao;
 
     @Enumerated(EnumType.STRING)
@@ -129,6 +129,11 @@ public class Evento {
         }
         if (prazoAlteracoes.isAfter(dataHora)) {
             throw new RegraNegocioException("O prazo para alterações não pode ser posterior à data do evento.");
+        }
+        // Um prazo já vencido criaria um evento que nunca poderia ser aberto. Para fechar as
+        // alterações antes do prazo, o organizador encerra o evento.
+        if (!prazoAlteracoes.isAfter(agora)) {
+            throw new RegraNegocioException("O prazo para alterações deve estar no futuro.");
         }
     }
 

@@ -31,6 +31,13 @@ class EventoTest {
     }
 
     @Test
+    void naoDeveAceitarPrazoJaVencido() {
+        assertThatThrownBy(() -> new Evento("X", "Desc", TipoEvento.OUTRO, DATA_EVENTO, AGORA.minusMinutes(1), AGORA))
+                .isInstanceOf(RegraNegocioException.class)
+                .hasMessageContaining("futuro");
+    }
+
+    @Test
     void naoDeveAceitarEventoNoPassado() {
         assertThatThrownBy(() -> new Evento("X", null, TipoEvento.OUTRO, AGORA.minusDays(1), AGORA.minusDays(2), AGORA))
                 .isInstanceOf(RegraNegocioException.class);

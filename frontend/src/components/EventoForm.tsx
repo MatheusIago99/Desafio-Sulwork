@@ -58,6 +58,7 @@ export function EventoForm({ inicial, onSalvar, onCancelar }: Props) {
       <label className="campo-largo">
         Descrição
         <textarea
+          required
           maxLength={1000}
           rows={2}
           value={dados.descricao}

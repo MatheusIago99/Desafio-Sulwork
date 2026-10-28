@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 public record EventoRequest(
         @NotBlank @Size(max = 120) String nome,
-        @Size(max = 1000) String descricao,
+        @NotBlank @Size(max = 1000) String descricao,
         @NotNull TipoEvento tipo,
         @NotNull LocalDateTime dataHora,
         @NotNull LocalDateTime prazoAlteracoes) {
