@@ -26,6 +26,10 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     List<Evento> proximos(@Param("agora") LocalDateTime agora, @Param("status") Collection<StatusEvento> status,
                           Pageable pagina);
 
+    @Query("select count(e) from Evento e where e.dataHora >= :inicio and e.dataHora < :fim and e.status in :status")
+    long contarEntre(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim,
+                     @Param("status") Collection<StatusEvento> status);
+
     /** Quantidade de eventos por tipo: cada linha é [tipo, quantidade]. */
     @Query("select e.tipo, count(e) from Evento e group by e.tipo")
     List<Object[]> contarPorTipo();

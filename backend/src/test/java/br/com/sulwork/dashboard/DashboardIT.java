@@ -27,7 +27,11 @@ class DashboardIT extends IntegrationTest {
                 .andExpect(jsonPath("$.eventosAbertos").value(0))
                 .andExpect(jsonPath("$.coberturaMedia").value(nullValue()))
                 .andExpect(jsonPath("$.eventosPorTipo", hasSize(6)))
-                .andExpect(jsonPath("$.proximosEventos", hasSize(0)));
+                .andExpect(jsonPath("$.proximosEventos", hasSize(0)))
+                .andExpect(jsonPath("$.contribuicoesTotal").value(0))
+                .andExpect(jsonPath("$.ultimaContribuicaoEm").value(nullValue()))
+                .andExpect(jsonPath("$.pendenciasPrioritarias", hasSize(0)))
+                .andExpect(jsonPath("$.contribuicoesRecentes", hasSize(0)));
     }
 
     @Test
@@ -60,7 +64,34 @@ class DashboardIT extends IntegrationTest {
                 // cancelado fica de fora dos próximos
                 .andExpect(jsonPath("$.proximosEventos", hasSize(2)))
                 .andExpect(jsonPath("$.proximosEventos[?(@.evento.nome == 'Café')].inscritos").value(1))
-                .andExpect(jsonPath("$.proximosEventos[?(@.evento.nome == 'Café')].percentualCobertura").value(50));
+                .andExpect(jsonPath("$.proximosEventos[?(@.evento.nome == 'Café')].percentualCobertura").value(50))
+                // o cancelado não conta; café (aberto) e rascunho estão a 10 dias, fora da semana
+                .andExpect(jsonPath("$.proximosEventosTotal").value(2))
+                .andExpect(jsonPath("$.proximosEventosNaSemana").value(0))
+                .andExpect(jsonPath("$.contribuicoesTotal").value(1))
+                .andExpect(jsonPath("$.ultimaContribuicaoEm").value("2026-03-10T09:00:00"))
+                // só o Bolo (obrigatório) continua pendente
+                .andExpect(jsonPath("$.pendenciasPrioritarias", hasSize(1)))
+                .andExpect(jsonPath("$.pendenciasPrioritarias[0].itemNome").value("Bolo"))
+                .andExpect(jsonPath("$.pendenciasPrioritarias[0].eventoNome").value("Café"))
+                .andExpect(jsonPath("$.pendenciasPrioritarias[0].quantidadeFaltante").value(2))
+                .andExpect(jsonPath("$.contribuicoesRecentes", hasSize(1)))
+                .andExpect(jsonPath("$.contribuicoesRecentes[0].participanteNome").value("Ana"))
+                .andExpect(jsonPath("$.contribuicoesRecentes[0].itemNome").value("Pão"))
+                .andExpect(jsonPath("$.contribuicoesRecentes[0].quantidade").value(10));
+    }
+
+    @Test
+    void pendenciasPrioritariasIgnoramEventosForaDoPrazo() throws Exception {
+        long cafe = criarEvento(mockMvc, "Café");
+        long categoria = criarCategoria(mockMvc, cafe, "Comidas", null);
+        criarItem(mockMvc, cafe, categoria, "Pão", 10, true);
+        alterarStatus(mockMvc, cafe, "ABERTO");
+        relogio.avancar(Duration.ofDays(9)); // prazo vencido, evento ainda ABERTO
+
+        mockMvc.perform(get("/api/dashboard"))
+                .andExpect(jsonPath("$.obrigatoriosPendentes").value(1))
+                .andExpect(jsonPath("$.pendenciasPrioritarias", hasSize(0)));
     }
 
     @Test

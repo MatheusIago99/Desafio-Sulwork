@@ -1,9 +1,12 @@
 package br.com.sulwork.contribuicao;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import br.com.sulwork.evento.StatusEvento;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -46,6 +49,33 @@ public interface ContribuicaoRepository extends JpaRepository<Contribuicao, Long
             order by e.dataHora, e.id, i.nome
             """)
     List<Contribuicao> listarDoParticipante(@Param("participanteId") Long participanteId);
+
+    /** Quantidade de contribuições em eventos por vir com um dos status informados. */
+    @Query("""
+            select count(c) from Contribuicao c
+            where c.item.evento.dataHora >= :agora and c.item.evento.status in :status
+            """)
+    long contarEmEventosPorVir(@Param("agora") LocalDateTime agora,
+                               @Param("status") Collection<StatusEvento> status);
+
+    @Query("""
+            select max(c.atualizadoEm) from Contribuicao c
+            where c.item.evento.dataHora >= :agora and c.item.evento.status in :status
+            """)
+    LocalDateTime ultimaEmEventosPorVir(@Param("agora") LocalDateTime agora,
+                                                  @Param("status") Collection<StatusEvento> status);
+
+    /** Contribuições mais recentes (por criação ou alteração) em eventos com um dos status informados. */
+    @Query("""
+            select c from Contribuicao c
+            join fetch c.item i
+            join fetch i.evento e
+            join fetch c.participante
+            where e.status in :status
+            order by c.atualizadoEm desc, c.id desc
+            """)
+    List<Contribuicao> recentes(@Param("status") Collection<StatusEvento> status,
+                                Pageable pagina);
 
     /** Total contribuído (por todos) em cada item informado: cada linha é [itemId, soma]. */
     @Query("""

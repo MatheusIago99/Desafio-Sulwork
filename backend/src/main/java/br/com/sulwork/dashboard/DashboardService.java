@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 
 import br.com.sulwork.cobertura.Cobertura;
 import br.com.sulwork.cobertura.CoberturaService;
+import br.com.sulwork.contribuicao.ContribuicaoRepository;
+import br.com.sulwork.dashboard.Dashboard.ContribuicaoRecente;
 import br.com.sulwork.dashboard.Dashboard.EventosPorTipo;
+import br.com.sulwork.dashboard.Dashboard.PendenciaPrioritaria;
 import br.com.sulwork.dashboard.Dashboard.ProximoEvento;
 import br.com.sulwork.evento.Evento;
 import br.com.sulwork.evento.EventoRepository;
@@ -19,6 +22,7 @@ import br.com.sulwork.evento.TipoEvento;
 import br.com.sulwork.evento.dto.EventoResponse;
 import br.com.sulwork.inscricao.InscricaoRepository;
 import br.com.sulwork.participante.ParticipanteRepository;
+import br.com.sulwork.pendencia.PendenciaService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,22 +35,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class DashboardService {
 
     static final int LIMITE_PROXIMOS = 5;
+    static final int LIMITE_PENDENCIAS = 6;
+    static final int LIMITE_RECENTES = 4;
+    private static final EnumSet<StatusEvento> STATUS_COM_CONTRIBUICOES =
+            EnumSet.of(StatusEvento.ABERTO, StatusEvento.ENCERRADO, StatusEvento.REALIZADO);
     private static final EnumSet<StatusEvento> STATUS_PROXIMOS =
             EnumSet.of(StatusEvento.RASCUNHO, StatusEvento.ABERTO, StatusEvento.ENCERRADO);
 
     private final EventoRepository eventoRepository;
     private final ParticipanteRepository participanteRepository;
     private final InscricaoRepository inscricaoRepository;
+    private final ContribuicaoRepository contribuicaoRepository;
     private final CoberturaService coberturaService;
+    private final PendenciaService pendenciaService;
     private final EventoService eventoService;
 
     public DashboardService(EventoRepository eventoRepository, ParticipanteRepository participanteRepository,
-                            InscricaoRepository inscricaoRepository, CoberturaService coberturaService,
+                            InscricaoRepository inscricaoRepository, ContribuicaoRepository contribuicaoRepository,
+                            CoberturaService coberturaService, PendenciaService pendenciaService,
                             EventoService eventoService) {
         this.eventoRepository = eventoRepository;
         this.participanteRepository = participanteRepository;
         this.inscricaoRepository = inscricaoRepository;
+        this.contribuicaoRepository = contribuicaoRepository;
         this.coberturaService = coberturaService;
+        this.pendenciaService = pendenciaService;
         this.eventoService = eventoService;
     }
 
@@ -54,8 +67,8 @@ public class DashboardService {
     public Dashboard montar() {
         LocalDateTime agora = eventoService.agora();
 
-        List<Cobertura> coberturasAbertos = eventoRepository.findByStatusOrderByDataHoraAsc(StatusEvento.ABERTO)
-                .stream()
+        List<Evento> abertos = eventoRepository.findByStatusOrderByDataHoraAsc(StatusEvento.ABERTO);
+        List<Cobertura> coberturasAbertos = abertos.stream()
                 .map(evento -> coberturaService.calcular(evento.getId()))
                 .toList();
         Integer coberturaMedia = coberturasAbertos.isEmpty() ? null
@@ -75,8 +88,38 @@ public class DashboardService {
                 inscricaoRepository.countByEventoStatus(StatusEvento.ABERTO),
                 coberturaMedia,
                 obrigatoriosPendentes,
+                eventoRepository.contarEntre(agora, agora.plusYears(100), STATUS_PROXIMOS),
+                eventoRepository.contarEntre(agora, agora.plusDays(7), STATUS_PROXIMOS),
+                contribuicaoRepository.contarEmEventosPorVir(agora, STATUS_PROXIMOS),
+                contribuicaoRepository.ultimaEmEventosPorVir(agora, STATUS_PROXIMOS),
                 eventosPorTipo(),
-                proximos);
+                proximos,
+                pendenciasPrioritarias(abertos, agora),
+                contribuicoesRecentes());
+    }
+
+    /**
+     * Itens obrigatórios incompletos dos eventos que ainda aceitam contribuições, do evento
+     * mais próximo ao mais distante. Reaproveita a priorização da lista "O que falta?".
+     */
+    private List<PendenciaPrioritaria> pendenciasPrioritarias(List<Evento> abertos, LocalDateTime agora) {
+        return abertos.stream()
+                .filter(evento -> evento.aceitaAlteracoesDeParticipantes(agora))
+                .flatMap(evento -> pendenciaService.listar(evento.getId(), null).itens().stream()
+                        .filter(item -> item.obrigatorio())
+                        .map(item -> new PendenciaPrioritaria(evento.getId(), evento.getNome(), item.itemId(),
+                                item.nome(), item.categoria(), item.quantidadeFaltante(), item.unidade())))
+                .limit(LIMITE_PENDENCIAS)
+                .toList();
+    }
+
+    private List<ContribuicaoRecente> contribuicoesRecentes() {
+        return contribuicaoRepository.recentes(STATUS_COM_CONTRIBUICOES, PageRequest.of(0, LIMITE_RECENTES))
+                .stream()
+                .map(c -> new ContribuicaoRecente(c.getItem().getEvento().getId(), c.getItem().getEvento().getNome(),
+                        c.getParticipante().getNome(), c.getItem().getNome(), c.getQuantidade(),
+                        c.getItem().getUnidade(), c.getAtualizadoEm()))
+                .toList();
     }
 
     /** Todos os tipos aparecem, inclusive com zero, sempre na mesma ordem. */
