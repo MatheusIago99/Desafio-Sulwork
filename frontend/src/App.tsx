@@ -62,7 +62,7 @@ export function App() {
             </NavLink>
             <nav className="menu" aria-label="Principal">
               <NavLink to="/" end>
-                <IconeInicio /> Dashboard
+                <IconeInicio /> Visão geral
               </NavLink>
               <NavLink to="/eventos">
                 <IconeCalendario /> Eventos

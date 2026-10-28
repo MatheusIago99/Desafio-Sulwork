@@ -171,7 +171,7 @@ Decisões de arquitetura:
 src
 ├── api          cliente REST tipado e tipos da API
 ├── components   componentes reutilizáveis (cobertura, lista O que falta, formulários...)
-├── pages        Dashboard, Eventos (tabela com busca e filtros), Evento (com abas), Minhas contribuições e Participantes
+├── pages        Visão geral, Eventos (tabela com busca e abas de status), Evento (com abas), Minhas contribuições e Participantes
 └── utils        CPF (máscara/validação) e formatação
 ```
 
