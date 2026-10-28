@@ -43,7 +43,7 @@ public interface ContribuicaoRepository extends JpaRepository<Contribuicao, Long
             join fetch c.item i
             join fetch i.evento e
             where c.participante.id = :participanteId
-            order by e.dataHora, i.nome
+            order by e.dataHora, e.id, i.nome
             """)
     List<Contribuicao> listarDoParticipante(@Param("participanteId") Long participanteId);
 

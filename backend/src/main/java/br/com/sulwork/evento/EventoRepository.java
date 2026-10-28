@@ -21,7 +21,7 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     @Query("""
             select e from Evento e
             where e.dataHora >= :agora and e.status in :status
-            order by e.dataHora
+            order by e.dataHora, e.id
             """)
     List<Evento> proximos(@Param("agora") LocalDateTime agora, @Param("status") Collection<StatusEvento> status,
                           Pageable pagina);
