@@ -3,7 +3,6 @@ package br.com.sulwork.inscricao;
 import java.util.List;
 import java.util.Optional;
 
-import br.com.sulwork.evento.StatusEvento;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,8 +15,6 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     boolean existsByParticipanteId(Long participanteId);
 
     long countByEventoId(Long eventoId);
-
-    long countByEventoStatus(StatusEvento status);
 
     @EntityGraph(attributePaths = "participante")
     Optional<Inscricao> findByEventoIdAndParticipanteId(Long eventoId, Long participanteId);

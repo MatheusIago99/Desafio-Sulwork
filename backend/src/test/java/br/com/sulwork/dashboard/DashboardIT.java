@@ -24,9 +24,7 @@ class DashboardIT extends IntegrationTest {
     void semDadosRetornaZerosSemInventarCobertura() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventosAbertos").value(0))
                 .andExpect(jsonPath("$.coberturaMedia").value(nullValue()))
-                .andExpect(jsonPath("$.eventosPorTipo", hasSize(6)))
                 .andExpect(jsonPath("$.proximosEventos", hasSize(0)))
                 .andExpect(jsonPath("$.contribuicoesTotal").value(0))
                 .andExpect(jsonPath("$.ultimaContribuicaoEm").value(nullValue()))
@@ -53,14 +51,8 @@ class DashboardIT extends IntegrationTest {
 
         // Pão 100% (peso 2) + Bolo 0% (peso 2) => 50%; Bolo continua pendente
         mockMvc.perform(get("/api/dashboard"))
-                .andExpect(jsonPath("$.eventosAbertos").value(1))
-                .andExpect(jsonPath("$.eventosEmOrganizacao").value(1))
-                .andExpect(jsonPath("$.participantesCadastrados").value(2))
-                .andExpect(jsonPath("$.inscricoesEmEventosAbertos").value(1))
                 .andExpect(jsonPath("$.coberturaMedia").value(50))
                 .andExpect(jsonPath("$.obrigatoriosPendentes").value(1))
-                .andExpect(jsonPath("$.eventosPorTipo[0].tipo").value("CAFE_DA_MANHA"))
-                .andExpect(jsonPath("$.eventosPorTipo[0].quantidade").value(3))
                 // cancelado fica de fora dos próximos
                 .andExpect(jsonPath("$.proximosEventos", hasSize(2)))
                 .andExpect(jsonPath("$.proximosEventos[?(@.evento.nome == 'Café')].inscritos").value(1))

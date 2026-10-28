@@ -37,17 +37,12 @@ function renderizar() {
 }
 
 const base: Dashboard = {
-  eventosAbertos: 1,
-  eventosEmOrganizacao: 2,
-  participantesCadastrados: 5,
-  inscricoesEmEventosAbertos: 4,
   coberturaMedia: 35,
   obrigatoriosPendentes: 3,
   proximosEventosTotal: 4,
   proximosEventosNaSemana: 1,
   contribuicoesTotal: 12,
   ultimaContribuicaoEm: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  eventosPorTipo: [],
   proximosEventos: [
     { evento: evento(1, 'Café de boas-vindas'), inscritos: 4, percentualCobertura: 35, obrigatoriosPendentes: 3, pronto: false },
   ],
@@ -95,7 +90,6 @@ describe('DashboardPage', () => {
   it('não inventa números quando não há dados', async () => {
     responder({
       ...base,
-      eventosAbertos: 0,
       coberturaMedia: null,
       obrigatoriosPendentes: 0,
       contribuicoesTotal: 0,

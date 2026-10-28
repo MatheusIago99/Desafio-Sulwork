@@ -171,17 +171,12 @@ export interface ProximoEvento {
 }
 
 export interface Dashboard {
-  eventosAbertos: number;
-  eventosEmOrganizacao: number;
-  participantesCadastrados: number;
-  inscricoesEmEventosAbertos: number;
   coberturaMedia: number | null;
   obrigatoriosPendentes: number;
   proximosEventosTotal: number;
   proximosEventosNaSemana: number;
   contribuicoesTotal: number;
   ultimaContribuicaoEm: string | null;
-  eventosPorTipo: { tipo: TipoEvento; quantidade: number }[];
   proximosEventos: ProximoEvento[];
   pendenciasPrioritarias: {
     eventoId: number;

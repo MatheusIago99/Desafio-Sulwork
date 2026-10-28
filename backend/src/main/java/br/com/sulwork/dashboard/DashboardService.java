@@ -1,27 +1,21 @@
 package br.com.sulwork.dashboard;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import br.com.sulwork.cobertura.Cobertura;
 import br.com.sulwork.cobertura.CoberturaService;
 import br.com.sulwork.contribuicao.ContribuicaoRepository;
 import br.com.sulwork.dashboard.Dashboard.ContribuicaoRecente;
-import br.com.sulwork.dashboard.Dashboard.EventosPorTipo;
 import br.com.sulwork.dashboard.Dashboard.PendenciaPrioritaria;
 import br.com.sulwork.dashboard.Dashboard.ProximoEvento;
 import br.com.sulwork.evento.Evento;
 import br.com.sulwork.evento.EventoRepository;
 import br.com.sulwork.evento.EventoService;
 import br.com.sulwork.evento.StatusEvento;
-import br.com.sulwork.evento.TipoEvento;
 import br.com.sulwork.evento.dto.EventoResponse;
 import br.com.sulwork.inscricao.InscricaoRepository;
-import br.com.sulwork.participante.ParticipanteRepository;
 import br.com.sulwork.pendencia.PendenciaService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -43,19 +37,16 @@ public class DashboardService {
             EnumSet.of(StatusEvento.RASCUNHO, StatusEvento.ABERTO, StatusEvento.ENCERRADO);
 
     private final EventoRepository eventoRepository;
-    private final ParticipanteRepository participanteRepository;
     private final InscricaoRepository inscricaoRepository;
     private final ContribuicaoRepository contribuicaoRepository;
     private final CoberturaService coberturaService;
     private final PendenciaService pendenciaService;
     private final EventoService eventoService;
 
-    public DashboardService(EventoRepository eventoRepository, ParticipanteRepository participanteRepository,
-                            InscricaoRepository inscricaoRepository, ContribuicaoRepository contribuicaoRepository,
+    public DashboardService(EventoRepository eventoRepository, InscricaoRepository inscricaoRepository, ContribuicaoRepository contribuicaoRepository,
                             CoberturaService coberturaService, PendenciaService pendenciaService,
                             EventoService eventoService) {
         this.eventoRepository = eventoRepository;
-        this.participanteRepository = participanteRepository;
         this.inscricaoRepository = inscricaoRepository;
         this.contribuicaoRepository = contribuicaoRepository;
         this.coberturaService = coberturaService;
@@ -82,17 +73,12 @@ public class DashboardService {
                 .toList();
 
         return new Dashboard(
-                coberturasAbertos.size(),
-                eventoRepository.countByStatus(StatusEvento.RASCUNHO),
-                participanteRepository.count(),
-                inscricaoRepository.countByEventoStatus(StatusEvento.ABERTO),
                 coberturaMedia,
                 obrigatoriosPendentes,
                 eventoRepository.contarEntre(agora, agora.plusYears(100), STATUS_PROXIMOS),
                 eventoRepository.contarEntre(agora, agora.plusDays(7), STATUS_PROXIMOS),
                 contribuicaoRepository.contarEmEventosPorVir(agora, STATUS_PROXIMOS),
                 contribuicaoRepository.ultimaEmEventosPorVir(agora, STATUS_PROXIMOS),
-                eventosPorTipo(),
                 proximos,
                 pendenciasPrioritarias(abertos, agora),
                 contribuicoesRecentes());
@@ -119,15 +105,6 @@ public class DashboardService {
                 .map(c -> new ContribuicaoRecente(c.getItem().getEvento().getId(), c.getItem().getEvento().getNome(),
                         c.getParticipante().getNome(), c.getItem().getNome(), c.getQuantidade(),
                         c.getItem().getUnidade(), c.getAtualizadoEm()))
-                .toList();
-    }
-
-    /** Todos os tipos aparecem, inclusive com zero, sempre na mesma ordem. */
-    private List<EventosPorTipo> eventosPorTipo() {
-        Map<TipoEvento, Long> contagem = eventoRepository.contarPorTipo().stream()
-                .collect(Collectors.toMap(l -> (TipoEvento) l[0], l -> ((Number) l[1]).longValue()));
-        return Arrays.stream(TipoEvento.values())
-                .map(tipo -> new EventosPorTipo(tipo, contagem.getOrDefault(tipo, 0L)))
                 .toList();
     }
 

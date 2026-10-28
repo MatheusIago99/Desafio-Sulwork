@@ -3,7 +3,6 @@ package br.com.sulwork.dashboard;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.com.sulwork.evento.TipoEvento;
 import br.com.sulwork.evento.dto.EventoResponse;
 
 /**
@@ -18,23 +17,15 @@ import br.com.sulwork.evento.dto.EventoResponse;
  * @param ultimaContribuicaoEm momento da contribuição mais recente (criação ou alteração), se houver
  */
 public record Dashboard(
-        long eventosAbertos,
-        long eventosEmOrganizacao,
-        long participantesCadastrados,
-        long inscricoesEmEventosAbertos,
         Integer coberturaMedia,
         int obrigatoriosPendentes,
         long proximosEventosTotal,
         long proximosEventosNaSemana,
         long contribuicoesTotal,
         LocalDateTime ultimaContribuicaoEm,
-        List<EventosPorTipo> eventosPorTipo,
         List<ProximoEvento> proximosEventos,
         List<PendenciaPrioritaria> pendenciasPrioritarias,
         List<ContribuicaoRecente> contribuicoesRecentes) {
-
-    public record EventosPorTipo(TipoEvento tipo, long quantidade) {
-    }
 
     public record ProximoEvento(
             EventoResponse evento,
