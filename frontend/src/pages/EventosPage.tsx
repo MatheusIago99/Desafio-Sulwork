@@ -8,7 +8,16 @@ import { IconeBusca, IconeMais, IconeSeta } from '../components/Icones';
 import { Modal } from '../components/Modal';
 import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
-import { STATUS_LABEL, TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+import { TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+
+const ABAS_STATUS: { valor: StatusEvento | ''; rotulo: string }[] = [
+  { valor: '', rotulo: 'Todos' },
+  { valor: 'RASCUNHO', rotulo: 'Rascunho' },
+  { valor: 'ABERTO', rotulo: 'Abertos' },
+  { valor: 'ENCERRADO', rotulo: 'Encerrados' },
+  { valor: 'REALIZADO', rotulo: 'Realizados' },
+  { valor: 'CANCELADO', rotulo: 'Cancelados' },
+];
 
 /** Busca sem diferenciar maiúsculas nem acentos. */
 function normalizar(texto: string): string {
@@ -70,6 +79,24 @@ export function EventosPage() {
         </Modal>
       )}
 
+      <div className="abas-status" role="tablist" aria-label="Filtrar por status">
+        {ABAS_STATUS.map((aba) => {
+          const quantidade = aba.valor ? (eventos ?? []).filter((e) => e.status === aba.valor).length : (eventos ?? []).length;
+          return (
+            <button
+              key={aba.rotulo}
+              type="button"
+              role="tab"
+              aria-selected={status === aba.valor}
+              className={`aba-status ${status === aba.valor ? 'aba-status-ativa' : ''}`}
+              onClick={() => setStatus(aba.valor)}
+            >
+              {aba.rotulo} <span className="aba-status-contagem">{quantidade}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="barra-filtros">
         <label className="campo-busca">
           <IconeBusca />
@@ -84,18 +111,6 @@ export function EventosPage() {
         <select aria-label="Filtrar por tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoEvento | '')}>
           <option value="">Todos os tipos</option>
           {Object.entries(TIPO_LABEL).map(([valor, rotulo]) => (
-            <option key={valor} value={valor}>
-              {rotulo}
-            </option>
-          ))}
-        </select>
-        <select
-          aria-label="Filtrar por status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as StatusEvento | '')}
-        >
-          <option value="">Todos os status</option>
-          {Object.entries(STATUS_LABEL).map(([valor, rotulo]) => (
             <option key={valor} value={valor}>
               {rotulo}
             </option>
