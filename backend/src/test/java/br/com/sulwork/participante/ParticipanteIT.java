@@ -62,6 +62,19 @@ class ParticipanteIT extends IntegrationTest {
     }
 
     @Test
+    void buscaNaoAceitaPedacosDoCpf() throws Exception {
+        criarParticipante(mockMvc, "Ana", "52998224725");
+
+        // Os dígitos do meio aparecem na máscara; aceitá-los na busca permitiria descobrir o resto.
+        for (String pedaco : new String[] {"982247", "529982247", "5299822472"}) {
+            mockMvc.perform(get("/api/participantes").param("busca", pedaco))
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+        mockMvc.perform(get("/api/participantes").param("busca", "ana"))
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
     void deveAtualizarSemInformarOCpf() throws Exception {
         long ana = criarParticipante(mockMvc, "Ana", "52998224725");
 

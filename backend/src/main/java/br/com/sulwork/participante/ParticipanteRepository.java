@@ -1,6 +1,7 @@
 package br.com.sulwork.participante;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,10 +13,12 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
 
     List<Participante> findAllByOrderByNomeAsc();
 
+    Optional<Participante> findByCpf(String cpf);
+
     @Query("""
             select p from Participante p
-            where lower(p.nome) like lower(concat('%', :termo, '%')) or p.cpf like concat('%', :termo, '%')
+            where lower(p.nome) like lower(concat('%', :termo, '%'))
             order by p.nome
             """)
-    List<Participante> buscar(@Param("termo") String termo);
+    List<Participante> buscarPorNome(@Param("termo") String termo);
 }

@@ -29,7 +29,12 @@ public class ParticipanteService {
         }
         String termo = busca.trim();
         String digitos = Cpf.normalizar(termo);
-        return participanteRepository.buscar(digitos.matches("\\d+") ? digitos : termo);
+        // CPF só com os 11 dígitos e correspondência exata. Aceitar pedaços permitiria
+        // descobrir o CPF completo a partir dos dígitos que a máscara mostra.
+        if (digitos.matches("\\d{11}")) {
+            return participanteRepository.findByCpf(digitos).map(List::of).orElse(List.of());
+        }
+        return participanteRepository.buscarPorNome(termo);
     }
 
     @Transactional(readOnly = true)
