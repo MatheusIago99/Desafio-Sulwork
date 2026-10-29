@@ -67,6 +67,23 @@ class ItemIT extends IntegrationTest {
     }
 
     @Test
+    void deveRecusarQuantidadesAcimaDoTeto() throws Exception {
+        long evento = criarEvento(mockMvc, "Café");
+        long categoria = criarCategoria(mockMvc, evento, "Bebidas", null);
+
+        postJson(mockMvc, "/api/eventos/" + evento + "/itens", """
+                {"nome": "Suco", "categoriaId": %d, "quantidadeNecessaria": 100001, "obrigatorio": true}
+                """.formatted(categoria))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("quantidadeNecessaria"));
+        postJson(mockMvc, "/api/eventos/" + evento + "/categorias", """
+                {"nome": "Comidas", "meta": 100001}
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("meta"));
+    }
+
+    @Test
     void naoDeveExcluirCategoriaComItens() throws Exception {
         long evento = criarEvento(mockMvc, "Café");
         long categoria = criarCategoria(mockMvc, evento, "Bebidas", null);
