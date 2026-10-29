@@ -277,6 +277,7 @@ O que cada status permite:
 | 9 | Um conflito de alérgeno deve bloquear a contribuição? | Não. É um alerta: o item ainda serve aos demais, e o objetivo é incentivar alternativas. |
 | 10 | Como medir a cobertura? | Fórmula explicada na próxima seção. |
 | 11 | Excluir ou cancelar eventos? | Só rascunhos podem ser excluídos; eventos publicados são cancelados (mantém o histórico). |
+| 12 | Quem pode criar, encerrar e cancelar eventos? É preciso login? | O desafio não pede controle de acesso, então não há login: qualquer pessoa age como organizador, e o seletor "Você é" só identifica quem contribui. Em produção, entraria login corporativo (SSO) com papéis: só o organizador altera o evento, e as restrições alimentares ficam visíveis só para quem precisa (ver [Premissas](#premissas) e [Dados pessoais e LGPD](#dados-pessoais-e-lgpd)). |
 
 ## Cálculo da cobertura
 
