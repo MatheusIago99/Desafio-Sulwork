@@ -4,7 +4,7 @@ import type { Alergeno, Categoria, Item } from '../../api/types';
 import { AlergenoChips, SeletorAlergenos } from '../../components/Alergenos';
 import { BarraProgresso } from '../../components/BarraProgresso';
 import { Modal } from '../../components/Modal';
-import { formatarQuantidade } from '../../utils/format';
+import { QUANTIDADE_MAXIMA, formatarQuantidade } from '../../utils/format';
 import type { DadosEvento, Executar } from './contexto';
 
 export function AbaItens({ dados, executar }: { dados: DadosEvento; executar: Executar }) {
@@ -145,7 +145,7 @@ function CabecalhoCategoria({
     return (
       <form className="linha-form" onSubmit={salvar}>
         <input aria-label="Nome da categoria" required value={nome} onChange={(e) => setNome(e.target.value)} />
-        <input aria-label="Meta" type="number" min={1} placeholder="Meta" value={meta} onChange={(e) => setMeta(e.target.value)} />
+        <input aria-label="Meta" type="number" min={1} max={QUANTIDADE_MAXIMA} placeholder="Meta" value={meta} onChange={(e) => setMeta(e.target.value)} />
         <button type="submit" className="botao botao-pequeno botao-primario">
           Salvar
         </button>
@@ -212,6 +212,7 @@ function FormCategoria({ eventoId, executar }: { eventoId: number; executar: Exe
         aria-label="Meta da categoria"
         type="number"
         min={1}
+        max={QUANTIDADE_MAXIMA}
         placeholder="Meta (opcional)"
         title="Quantidade mínima de unidades que a categoria deve reunir"
         value={meta}
@@ -284,7 +285,7 @@ function FormItem({
       </label>
       <label>
         Quantidade necessária
-        <input type="number" min={inicial?.quantidadeContribuida || 1} required value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
+        <input type="number" min={inicial?.quantidadeContribuida || 1} max={QUANTIDADE_MAXIMA} required value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
       </label>
       <label>
         Unidade (opcional)

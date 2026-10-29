@@ -86,6 +86,9 @@ export function paraInputDataHora(iso: string): string {
   return iso.slice(0, 16);
 }
 
+/** Mesmo teto do backend (Limites.QUANTIDADE_MAXIMA) para quantidades e metas. */
+export const QUANTIDADE_MAXIMA = 100_000;
+
 export function formatarQuantidade(quantidade: number, unidade: string | null): string {
   return unidade ? `${quantidade} ${unidade}` : String(quantidade);
 }

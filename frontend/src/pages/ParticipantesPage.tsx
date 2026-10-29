@@ -80,7 +80,7 @@ export function ParticipantesPage() {
           <IconeBusca />
           <input
             type="search"
-            placeholder="Buscar por nome ou CPF"
+            placeholder="Buscar por nome ou CPF completo"
             aria-label="Buscar participantes"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
