@@ -172,11 +172,13 @@ Decisões de arquitetura:
 src
 ├── api          cliente REST tipado e tipos da API
 ├── components   componentes reutilizáveis (cobertura, lista O que falta, formulários...)
-├── pages        Visão geral, Eventos (tabela com busca e abas de status), Evento (com abas), Minhas contribuições e Participantes
+├── pages        Visão geral, Eventos (cards com busca e filtros de status), Evento (com abas), Minhas contribuições e Participantes
 └── utils        CPF (máscara/validação) e formatação
 ```
 
 A **visão geral** (tela inicial) mostra só indicadores calculados a partir dos dados: próximos eventos (e quantos são nesta semana), contribuições registradas e a mais recente, itens obrigatórios sem dono e cobertura média dos eventos abertos. Abaixo vêm os próximos eventos com a cobertura de cada um, as **pendências prioritárias** (itens obrigatórios sem dono nos eventos que ainda aceitam contribuições, reaproveitando a priorização do "O que falta?") e as contribuições mais recentes. Não há métricas estimadas: sem eventos abertos, a cobertura média aparece como "—" em vez de um 0% enganoso.
+
+**Visual.** A interface segue o pacote visual Sulwork (azul-marinho `#06143B`, azul `#4779F5` e fonte Inter). Os eventos têm uma **capa ilustrativa**: um gradiente da marca com o ícone do tipo de evento, marcado para leitores de tela como "Capa ilustrativa". Não é foto, porque o sistema não guarda imagens. Por acessibilidade, o fundo dos botões usa `#3366E6`: texto branco sobre `#4779F5` tem contraste de 3,95:1, abaixo do mínimo de 4,5:1 da WCAG AA, enquanto `#3366E6` chega a 5,0:1. O `#4779F5` fica em barras, ícones e foco, onde o mínimo é 3:1. No celular, o menu vai para o rodapé.
 
 A página do evento carrega todos os dados em paralelo e recarrega depois de cada alteração. As regras ficam todas no backend: o frontend só usa os campos derivados para habilitar ou desabilitar ações e mostra a mensagem de erro devolvida pela API.
 
@@ -397,7 +399,7 @@ Exemplo de erro de regra de negócio (`422`):
 | | `AnalisadorRestricoesTest` | Agrupamento de restrições, conflitos por item, observações |
 | Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o CPF que nunca sai completo nas respostas, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
 
-**Frontend: 51 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, visão geral (indicadores, pendências prioritárias, contribuições recentes e ausência de números inventados sem dados), modal (foco, Esc e regressão do foco ao digitar), Minhas contribuições (agrupamento e bloqueio após o prazo), selo de status e tempo até o prazo, formulário de participante (máscara, CPF inválido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
+**Frontend: 53 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, visão geral (indicadores, pendências prioritárias, contribuições recentes e ausência de números inventados sem dados), modal (foco, Esc e regressão do foco ao digitar), capa ilustrativa (rótulo acessível e status), Minhas contribuições (agrupamento e bloqueio após o prazo), selo de status e tempo até o prazo, formulário de participante (máscara, CPF inválido e válido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
 
 ## Uso de IA
 
@@ -410,7 +412,7 @@ Exemplo de erro de regra de negócio (`422`):
 - **Testes:** escrita dos cenários de teste e execução local da suíte, incluindo os testes de integração com Testcontainers.
 - **Verificação da interface:** navegação automatizada (Playwright) pelo fluxo principal para conferir o comportamento real e o layout no celular.
 - **Publicação:** configuração do deploy (Render, Vercel e Neon) e diagnóstico dos problemas que surgiram em produção.
-- **Interface:** refinamento visual a partir de revisões com screenshots. O layout final se inspira num protótipo gerado no **Stitch** (ferramenta de design com IA do Google): paleta, tipografia, menu lateral e organização da visão geral.
+- **Interface:** refinamento visual a partir de revisões com screenshots. O layout final segue um pacote visual consolidado a partir de protótipos gerados no **Stitch** (ferramenta de design com IA do Google): paleta, tipografia, menu lateral, capas ilustrativas, cards de evento e cabeçalho do evento.
 - **Documentação:** rascunho deste README.
 
 **Uma sugestão aceita:** travar o item com lock pessimista (`SELECT ... FOR UPDATE`) antes de validar a soma das contribuições. Aceitei porque a regra "a soma não pode ultrapassar a quantidade necessária" é exatamente o tipo de validação que quebra sob concorrência. Para não aceitar só na teoria, o teste de concorrência foi executado **com e sem o lock**: sem ele, mais contribuições do que o permitido eram aceitas; com ele, exatamente 2 de 4.
@@ -419,7 +421,7 @@ Exemplo de erro de regra de negócio (`422`):
 
 - **Rejeitada: mudar o status para `ENCERRADO` automaticamente com um job agendado (`@Scheduled`) quando o prazo vence.** Preferi verificar o prazo a cada requisição: não existe janela entre o vencimento e a execução do job, o status continua sendo uma decisão do organizador, e os testes ficam determinísticos com o relógio injetado.
 - **Alterada: a fórmula de cobertura.** A primeira proposta combinava, dentro da mesma categoria, a média dos itens com a meta. Na prática isso gerava casos difíceis de explicar (meta atingida, mas categoria abaixo de 100%). Mudei para: **com meta, a meta define a categoria; sem meta, vale a média ponderada dos itens**, e os obrigatórios continuam cobrados à parte no indicador "pronto".
-- **Alterado: o protótipo do Stitch.** Ele trazia fotos dos eventos, local, perfil com login, "taxa de presença", valores em R$, status diferentes dos exigidos e um histórico de atividades. Aproveitei só a camada visual e a organização das telas: o que não existe no domínio ficou de fora, para não mostrar números inventados nem mudar os status do enunciado, e o feed de atividades virou "contribuições recentes", que são dados registrados.
+- **Alterado: o protótipo do Stitch.** Ele trazia fotos dos eventos, local, público, organizador, perfil com login, convites, "abertura agendada", notificações, valores em R$ e um histórico de atividades. Aproveitei só a camada visual e a organização das telas: o que não existe no domínio ficou de fora, para não mostrar números inventados nem mudar as regras do enunciado. As fotos viraram capas ilustrativas, o feed de atividades virou "contribuições recentes" (dados registrados) e o azul dos botões foi escurecido para passar no contraste mínimo.
 - **Rejeitada: aplicar o padrão Strategy à cobertura**, com várias estratégias intercambiáveis. Existe uma única fórmula, e uma classe pura e bem testada é mais simples de entender e manter. Abstração sem uma segunda implementação real seria só indireção.
 - **Ajuste encontrado pelos testes:** o teste do formulário de participante mostrou que a mensagem "CPF inválido" estava dentro do `<label>`, o que mudava o nome acessível do campo para leitores de tela. A mensagem foi movida para fora do label e ligada ao campo por `aria-describedby`.
 
