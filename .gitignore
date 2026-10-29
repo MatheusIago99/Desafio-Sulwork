@@ -19,3 +19,7 @@ frontend/coverage/
 
 # Cache do compilador TypeScript
 *.tsbuildinfo
+
+# Variáveis de ambiente e segredos locais (nunca versionar)
+.env
+.env.*
