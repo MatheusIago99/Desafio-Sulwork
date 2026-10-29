@@ -46,6 +46,16 @@ function SeletorParticipanteAtual() {
   );
 }
 
+/** No celular, o menu vai para o rodapé e usa o rótulo curto. */
+function Rotulo({ longo, curto }: { longo: string; curto: string }) {
+  return (
+    <>
+      <span className="rotulo-longo">{longo}</span>
+      <span className="rotulo-curto">{curto}</span>
+    </>
+  );
+}
+
 export function App() {
   return (
     <ParticipanteAtualProvider>
@@ -56,19 +66,19 @@ export function App() {
               <span className="marca-icone" aria-hidden="true">
                 S
               </span>
-              <span>
+              <span className="marca-texto">
                 Sulwork <span className="marca-destaque">Eventos</span>
               </span>
             </NavLink>
             <nav className="menu" aria-label="Principal">
               <NavLink to="/" end>
-                <IconeInicio /> Visão geral
+                <IconeInicio /> <Rotulo longo="Visão geral" curto="Início" />
               </NavLink>
               <NavLink to="/eventos">
                 <IconeCalendario /> Eventos
               </NavLink>
               <NavLink to="/minhas-contribuicoes">
-                <IconeLista /> Minhas contribuições
+                <IconeLista /> <Rotulo longo="Minhas contribuições" curto="Contribuições" />
               </NavLink>
               <NavLink to="/participantes">
                 <IconePessoas /> Participantes
