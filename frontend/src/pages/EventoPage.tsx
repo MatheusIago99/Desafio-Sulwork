@@ -7,10 +7,11 @@ import { CoberturaResumo } from '../components/CoberturaResumo';
 import { EventoForm } from '../components/EventoForm';
 import { Modal } from '../components/Modal';
 import { PendenciasLista } from '../components/PendenciasLista';
-import { PrazoRestante } from '../components/PrazoRestante';
-import { StatusBadge } from '../components/StatusBadge';
+import { CapaEvento } from '../components/CapaEvento';
+import { IconeAmpulheta, IconeCalendario, IconeLapis, IconePessoas, IconeRelogio } from '../components/Icones';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { ACAO_STATUS, TIPO_LABEL, formatarDataHora } from '../utils/format';
+import { ACAO_STATUS, formatarDataHora, formatarDataLonga, formatarHora } from '../utils/format';
+import { tempoRestante } from '../utils/prazo';
 import { AbaContribuicoes } from './evento/AbaContribuicoes';
 import { AbaItens } from './evento/AbaItens';
 import { AbaParticipantes } from './evento/AbaParticipantes';
@@ -114,24 +115,10 @@ export function EventoPage() {
 
   return (
     <div className="pagina">
-      <Link to="/eventos" className="voltar">
-        ← Voltar para a lista
-      </Link>
-
-      <header className="evento-cabecalho">
-        <div>
-          <div className="linha-inline">
-            <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
-            <span className="evento-tipo">{TIPO_LABEL[evento.tipo]}</span>
-          </div>
-          <h1>{evento.nome}</h1>
-          {evento.descricao && <p>{evento.descricao}</p>}
-          <p>
-            <strong>{formatarDataHora(evento.dataHora)}</strong>
-            <span className="texto-suave"> · alterações até {formatarDataHora(evento.prazoAlteracoes)}</span>{' '}
-            {evento.aceitaAlteracoes && <PrazoRestante prazo={evento.prazoAlteracoes} />}
-          </p>
-        </div>
+      <div className="evento-topo">
+        <nav className="trilha" aria-label="Você está em">
+          <Link to="/eventos">Eventos</Link> / <span>{evento.nome}</span>
+        </nav>
         <div className="evento-acoes">
           {evento.transicoesPermitidas.map((status) => (
             <button
@@ -145,7 +132,7 @@ export function EventoPage() {
           ))}
           {(evento.status === 'RASCUNHO' || evento.status === 'ABERTO') && !editando && (
             <button type="button" className="botao" onClick={() => setEditando(true)}>
-              Editar
+              <IconeLapis /> Editar evento
             </button>
           )}
           {evento.status === 'RASCUNHO' && (
@@ -154,6 +141,68 @@ export function EventoPage() {
             </button>
           )}
         </div>
+      </div>
+
+      <header className="cartao evento-cabecalho">
+        <CapaEvento tipo={evento.tipo} status={evento.status} prazoVencido={evento.prazoVencido} variante="destaque" />
+        <div className="evento-cabecalho-corpo">
+          <div className="evento-titulo">
+            <h1>{evento.nome}</h1>
+            <CaixaPrazoDestaque dados={dados} />
+          </div>
+          <dl className="blocos-info">
+            <div className="bloco-info">
+              <IconeCalendario />
+              <div>
+                <dt>Data</dt>
+                <dd>{formatarDataLonga(evento.dataHora)}</dd>
+              </div>
+            </div>
+            <div className="bloco-info">
+              <IconeRelogio />
+              <div>
+                <dt>Horário</dt>
+                <dd>{formatarHora(evento.dataHora)}</dd>
+              </div>
+            </div>
+            <div className="bloco-info">
+              <IconeAmpulheta />
+              <div>
+                <dt>Alterações até</dt>
+                <dd>{formatarDataHora(evento.prazoAlteracoes)}</dd>
+              </div>
+            </div>
+            <div className="bloco-info">
+              <IconePessoas />
+              <div>
+                <dt>Inscritos</dt>
+                <dd>
+                  {dados.inscricoes.length} {dados.inscricoes.length === 1 ? 'pessoa' : 'pessoas'}
+                </dd>
+              </div>
+            </div>
+          </dl>
+          {evento.descricao && <p className="evento-descricao">{evento.descricao}</p>}
+        </div>
+
+        <nav className="abas" role="tablist">
+          {ABAS.map((a) => {
+            const quantidade = contagemAba(a.id, dados);
+            return (
+              <button
+                key={a.id}
+                type="button"
+                role="tab"
+                aria-selected={abaAtual === a.id}
+                className={`aba ${abaAtual === a.id ? 'aba-ativa' : ''}`}
+                onClick={() => setAba(a.id)}
+              >
+                {a.rotulo}
+                {quantidade !== null && <span className="contador">{quantidade}</span>}
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
       {editando && (
@@ -171,24 +220,6 @@ export function EventoPage() {
 
       <CoberturaResumo cobertura={dados.cobertura} />
 
-      <nav className="abas" role="tablist">
-        {ABAS.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            role="tab"
-            aria-selected={abaAtual === a.id}
-            className={`aba ${abaAtual === a.id ? 'aba-ativa' : ''}`}
-            onClick={() => setAba(a.id)}
-          >
-            {a.rotulo}
-            {a.id === 'falta' && dados.pendencias.totalPendentes > 0 && (
-              <span className="contador">{dados.pendencias.totalPendentes}</span>
-            )}
-          </button>
-        ))}
-      </nav>
-
       <section className="aba-conteudo" role="tabpanel">
         {abaAtual === 'falta' && (
           <PendenciasLista
@@ -205,6 +236,60 @@ export function EventoPage() {
         {abaAtual === 'participantes' && <AbaParticipantes dados={dados} executar={executar} />}
         {abaAtual === 'restricoes' && <AbaRestricoes resumo={dados.restricoes} />}
       </section>
+    </div>
+  );
+}
+
+/** Número ao lado de cada aba; "O que falta?" só mostra quando há pendências. */
+function contagemAba(aba: Aba, dados: DadosEvento): number | null {
+  switch (aba) {
+    case 'falta':
+      return dados.pendencias.totalPendentes > 0 ? dados.pendencias.totalPendentes : null;
+    case 'itens':
+      return dados.itens.length;
+    case 'contribuicoes':
+      return dados.contribuicoes.length;
+    case 'participantes':
+      return dados.inscricoes.length;
+    default:
+      return null;
+  }
+}
+
+/** Situação do prazo em destaque no cabeçalho, com a cor do estado do evento. */
+function CaixaPrazoDestaque({ dados }: { dados: DadosEvento }) {
+  const { evento } = dados;
+  const prazo = formatarDataHora(evento.prazoAlteracoes);
+  let tom = '';
+  let rotulo = 'Prazo para alterações';
+  let valor = prazo;
+  if (evento.aceitaAlteracoes) {
+    rotulo = 'Prazo encerra em';
+    const restante = tempoRestante(evento.prazoAlteracoes);
+    if (restante) valor = `${prazo} (${restante.toLowerCase()})`;
+  } else if (evento.status === 'ABERTO' && evento.prazoVencido) {
+    tom = 'aviso';
+    rotulo = 'Prazo encerrado';
+  } else if (evento.status === 'ENCERRADO') {
+    tom = 'aviso';
+    rotulo = 'Contribuições encerradas';
+  } else if (evento.status === 'REALIZADO') {
+    tom = 'sucesso';
+    rotulo = 'Evento realizado';
+    valor = formatarDataHora(evento.dataHora);
+  } else if (evento.status === 'CANCELADO') {
+    tom = 'erro';
+    rotulo = 'Evento cancelado';
+  }
+  return (
+    <div className={`caixa-prazo-destaque ${tom ? `caixa-prazo-destaque-${tom}` : ''}`}>
+      <span className="caixa-prazo-destaque-icone" aria-hidden="true">
+        <IconeAmpulheta />
+      </span>
+      <div>
+        <small>{rotulo}</small>
+        <strong>{valor}</strong>
+      </div>
     </div>
   );
 }

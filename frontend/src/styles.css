@@ -287,18 +287,6 @@ main {
   flex-wrap: wrap;
 }
 
-.voltar {
-  display: inline-block;
-  font-size: 0.85rem;
-  color: var(--texto-suave);
-  text-decoration: none;
-}
-
-.voltar:hover {
-  color: var(--texto);
-  text-decoration: underline;
-}
-
 .cartao {
   background: var(--superficie);
   border: 1px solid var(--borda);
@@ -883,14 +871,6 @@ input[type='checkbox'] {
 }
 
 /* ==========================================================================
-   Tipo do evento
-   ========================================================================== */
-.evento-tipo {
-  font-size: 0.85rem;
-  color: var(--texto-suave);
-}
-
-/* ==========================================================================
    Capa ilustrativa e card de evento
    ========================================================================== */
 .capa {
@@ -1138,20 +1118,163 @@ input[type='checkbox'] {
 /* ==========================================================================
    Detalhe do evento
    ========================================================================== */
-.evento-cabecalho {
+.evento-topo {
   display: flex;
   justify-content: space-between;
-  gap: 1.25rem;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
-.evento-cabecalho h1 {
-  margin: 0.35rem 0 0.25rem;
+.trilha {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
 }
 
-.evento-cabecalho p {
-  margin: 0.2rem 0;
-  max-width: 65ch;
+.trilha a {
+  color: var(--texto-suave);
+}
+
+.trilha span {
+  color: var(--texto-forte);
+  font-weight: 500;
+}
+
+.evento-cabecalho {
+  padding: 0;
+  overflow: hidden;
+}
+
+.evento-cabecalho-corpo {
+  padding: 1.5rem 1.75rem 1.25rem;
+}
+
+.evento-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.evento-titulo h1 {
+  margin: 0;
+}
+
+.caixa-prazo-destaque {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 280px;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid #c9d8fd;
+  border-radius: var(--raio-cartao);
+  background: var(--acento-claro);
+}
+
+.caixa-prazo-destaque-icone {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--acento);
+}
+
+.caixa-prazo-destaque small {
+  display: block;
+  color: var(--acento);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.caixa-prazo-destaque strong {
+  display: block;
+  color: var(--texto-forte);
+  font-size: 0.95rem;
+}
+
+.caixa-prazo-destaque-aviso {
+  border-color: #f6d9a6;
+  background: var(--aviso-claro);
+}
+
+.caixa-prazo-destaque-erro {
+  border-color: #f5c3be;
+  background: var(--erro-claro);
+}
+
+.caixa-prazo-destaque-sucesso {
+  border-color: #bfe3cf;
+  background: var(--sucesso-claro);
+}
+
+.caixa-prazo-destaque-aviso small,
+.caixa-prazo-destaque-aviso .caixa-prazo-destaque-icone {
+  color: var(--aviso);
+}
+
+.caixa-prazo-destaque-erro small,
+.caixa-prazo-destaque-erro .caixa-prazo-destaque-icone {
+  color: var(--erro);
+}
+
+.caixa-prazo-destaque-sucesso small,
+.caixa-prazo-destaque-sucesso .caixa-prazo-destaque-icone {
+  color: var(--sucesso);
+}
+
+.blocos-info {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+}
+
+.bloco-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--fundo);
+}
+
+.bloco-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--acento);
+}
+
+.bloco-info dt {
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+}
+
+.bloco-info dd {
+  margin: 0;
+  color: var(--texto-forte);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.evento-descricao {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--borda-forte);
+  border-radius: var(--raio);
+  background: var(--cinza-claro);
+  color: var(--texto);
+}
+
+.evento-cabecalho .abas {
+  padding: 0 1rem;
+  border-top: 1px solid var(--borda);
+  border-bottom: none;
 }
 
 .evento-acoes {
@@ -1955,6 +2078,23 @@ input[type='checkbox'] {
 }
 
 @media (max-width: 720px) {
+  .blocos-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .caixa-prazo-destaque {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .capa-destaque {
+    height: 150px;
+  }
+
+  .evento-cabecalho-corpo {
+    padding: 1.1rem 1rem 1rem;
+  }
+
   .formulario,
   .grade-duas-colunas {
     grid-template-columns: 1fr;

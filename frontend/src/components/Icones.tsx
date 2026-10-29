@@ -95,6 +95,13 @@ export const IconeCaixa = () => (
   </svg>
 );
 
+export const IconeLapis = () => (
+  <svg {...base}>
+    <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z" />
+    <path d="m13.5 6.5 4 4" />
+  </svg>
+);
+
 export const IconeAmpulheta = () => (
   <svg {...base}>
     <path d="M6.5 3h11M6.5 21h11" />

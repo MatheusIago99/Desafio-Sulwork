@@ -60,6 +60,19 @@ export function formatarDataHora(iso: string): string {
   return formatoDataHora.format(new Date(iso));
 }
 
+const formatoDataLonga = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+const formatoHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+/** Ex.: "4 de novembro de 2026". */
+export function formatarDataLonga(iso: string): string {
+  return formatoDataLonga.format(new Date(iso));
+}
+
+/** Ex.: "08:00". */
+export function formatarHora(iso: string): string {
+  return formatoHora.format(new Date(iso));
+}
+
 /** Converte o valor da API para o formato aceito por <input type="datetime-local">. */
 export function paraInputDataHora(iso: string): string {
   return iso.slice(0, 16);
