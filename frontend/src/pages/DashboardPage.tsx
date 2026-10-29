@@ -4,6 +4,8 @@ import { api } from '../api/client';
 import type { Dashboard, Participante, ProximoEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { BarraProgresso } from '../components/BarraProgresso';
+import { CaixaPrazo } from '../components/CaixaPrazo';
+import { CapaEvento } from '../components/CapaEvento';
 import {
   IconeAlerta,
   IconeCaixa,
@@ -14,10 +16,8 @@ import {
   IconeRelogio,
   IconeSeta,
 } from '../components/Icones';
-import { PrazoRestante } from '../components/PrazoRestante';
-import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { TIPO_LABEL, formatarDataHora, formatarQuantidade } from '../utils/format';
+import { formatarDataHora, formatarQuantidade } from '../utils/format';
 import { iniciais } from '../utils/iniciais';
 import { tempoRelativo } from '../utils/tempoRelativo';
 
@@ -222,35 +222,32 @@ function Conteudo({ dados }: { dados: Dashboard }) {
 function CartaoEvento({ proximo }: { proximo: ProximoEvento }) {
   const { evento, inscritos, percentualCobertura, obrigatoriosPendentes } = proximo;
   return (
-    <li className="cartao cartao-evento-visao">
-      <div className="cartao-evento-faixa">
-        <span className="tipo-evento">{TIPO_LABEL[evento.tipo]}</span>
-        <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
-      </div>
-      <div className="cartao-evento-corpo">
-        <h3>{evento.nome}</h3>
-        <div className="cartao-evento-meta">
-          <span>
-            <IconeRelogio /> {formatarDataHora(evento.dataHora)}
-          </span>
-          <span>
-            <IconePessoas /> {inscritos} {inscritos === 1 ? 'inscrito' : 'inscritos'}
-          </span>
-          {evento.aceitaAlteracoes ? (
-            <PrazoRestante prazo={evento.prazoAlteracoes} />
-          ) : (
-            <span className="texto-suave">Prazo: {formatarDataHora(evento.prazoAlteracoes)}</span>
-          )}
+    <li className="cartao linha-evento">
+      <CapaEvento tipo={evento.tipo} status={evento.status} prazoVencido={evento.prazoVencido} variante="linha" />
+      <div className="linha-evento-corpo">
+        <div>
+          <h3>{evento.nome}</h3>
+          <div className="cartao-evento-meta">
+            <span>
+              <IconeRelogio /> {formatarDataHora(evento.dataHora)}
+            </span>
+            <span>
+              <IconePessoas /> {inscritos} {inscritos === 1 ? 'inscrito' : 'inscritos'}
+            </span>
+          </div>
         </div>
-        <div className="cartao-evento-cobertura">
-          <span className="texto-suave">
-            Cobertura dos itens
-            {obrigatoriosPendentes > 0 && ` · ${obrigatoriosPendentes} obrigatório(s) sem dono`}
-          </span>
-          <strong>{percentualCobertura}% atendido</strong>
+        <CaixaPrazo evento={evento} />
+        <div>
+          <div className="cartao-evento-cobertura">
+            <span className="texto-suave">
+              Cobertura dos itens
+              {obrigatoriosPendentes > 0 && ` · ${obrigatoriosPendentes} obrigatório(s) sem dono`}
+            </span>
+            <strong>{percentualCobertura}% atendido</strong>
+          </div>
+          <BarraProgresso percentual={percentualCobertura} rotulo={`Cobertura de ${evento.nome}`} pequena />
         </div>
-        <BarraProgresso percentual={percentualCobertura} rotulo={`Cobertura de ${evento.nome}`} pequena />
-        <Link to={`/eventos/${evento.id}`} className="botao botao-primario botao-bloco">
+        <Link to={`/eventos/${evento.id}`} className="cartao-evento-acao">
           Ver evento <IconeSeta />
         </Link>
       </div>
