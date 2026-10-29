@@ -26,10 +26,11 @@ Aplicação para organizar os eventos de alimentação da Sulwork (cafés da man
 8. [Cálculo da cobertura](#cálculo-da-cobertura)
 9. [Restrições alimentares e alérgenos](#restrições-alimentares-e-alérgenos)
 10. [Dados pessoais e LGPD](#dados-pessoais-e-lgpd)
-11. [Feature livre: “O que falta?”](#feature-livre-o-que-falta)
-12. [API](#api)
-13. [Testes](#testes)
-14. [Uso de IA](#uso-de-ia)
+11. [Segurança](#segurança)
+12. [Feature livre: “O que falta?”](#feature-livre-o-que-falta)
+13. [API](#api)
+14. [Testes](#testes)
+15. [Uso de IA](#uso-de-ia)
 
 ---
 
@@ -320,8 +321,8 @@ O sistema trata dados pessoais de colaboradores, então foi pensado com a LGPD (
 | Restrições alimentares e observações | Segurança alimentar: avisar quem vai levar um item que alguém inscrito não pode consumir |
 
 - **Restrições alimentares são dado sensível** (dado referente à saúde, Art. 5º, II). São usadas **só** para a finalidade de segurança alimentar do evento (Art. 6º, I e Art. 11) e, nos eventos, entram no cruzamento apenas as restrições dos inscritos.
-- **Minimização do CPF** (Art. 6º, III): o CPF é recebido no cadastro e usado na busca, mas **a API nunca o devolve completo**. As respostas trazem só `cpfMascarado` (ex.: `***.982.247-**`), e a edição do participante não recebe nem exibe o CPF. Há testes de integração garantindo que o número completo não aparece nas listagens de participantes nem de inscrições.
-- **Dados de demonstração são fictícios:** os CPFs usados no `SEED_DEMO` são números de exemplo amplamente usados em documentação e testes, não de pessoas reais.
+- **Minimização do CPF** (Art. 6º, III): o CPF é recebido no cadastro e pode ser usado na busca **só completo** (11 dígitos, correspondência exata), mas **a API nunca o devolve completo**. As respostas trazem só `cpfMascarado` (ex.: `***.982.247-**`), e a edição do participante não recebe nem exibe o CPF. Há testes de integração garantindo que o número completo não aparece nas listagens de participantes nem de inscrições.
+- **Dados de demonstração são fictícios:** os CPFs usados no perfil `demo` são números de exemplo amplamente usados em documentação e testes, não de pessoas reais.
 - **Exclusão:** um participante sem inscrições pode ser excluído, o que remove seus dados.
 
 **Limitações conhecidas e o que seria necessário em produção.** Como o desafio não pede autenticação, qualquer pessoa com acesso à aplicação vê nomes e restrições dos inscritos. Em produção, seriam necessários:
@@ -330,6 +331,33 @@ O sistema trata dados pessoais de colaboradores, então foi pensado com a LGPD (
 - registro do consentimento (ou outra base legal definida pela empresa) no cadastro das restrições, com texto explicando o uso;
 - política de retenção: anonimizar ou apagar restrições e inscrições depois que o evento é realizado;
 - atendimento aos direitos do titular (acesso, correção e eliminação, Art. 18) e registro de quem acessou os dados.
+
+## Segurança
+
+Foi feita uma revisão de segurança de todo o projeto (código, configuração, dependências, histórico do Git e publicação). O resumo:
+
+**Proteções implementadas**
+
+| Área | Como está protegido |
+|---|---|
+| Segredos | A senha do banco de produção fica só nas variáveis do Render (`sync: false` no `render.yaml`). O histórico do Git foi verificado e nenhuma credencial foi versionada. Arquivos `.env` são ignorados pelo Git. As senhas do `docker-compose.yml` valem só para o banco local. |
+| SQL injection | Todas as consultas, inclusive a nativa da cobertura, usam parâmetros; nenhuma concatena texto do usuário. |
+| Validação de entrada | Todas as requisições passam por Bean Validation (`@Valid`), com tamanho máximo nos textos e teto de **100.000** para quantidades e metas (`Limites.QUANTIDADE_MAXIMA`), o que evita valores absurdos que distorceriam a cobertura. |
+| Erros | O tratador global devolve mensagens padronizadas, sem stack trace nem detalhes internos. |
+| Endpoints de administração | O Actuator expõe só `/actuator/health`. |
+| CORS | A API só aceita chamadas do navegador vindas do site publicado e do ambiente local. |
+| CPF | Mascarado em todas as respostas (ver [LGPD](#dados-pessoais-e-lgpd)). A busca aceita **só o CPF completo**: como a máscara mostra os seis dígitos do meio e os dois últimos são calculados a partir dos nove primeiros, aceitar pedaços permitiria descobrir o CPF inteiro com até mil buscas. Há teste de integração para isso. |
+| Cabeçalhos do site | Vercel (`vercel.json`) e nginx (`nginx.conf`) enviam `Content-Security-Policy` (scripts só do próprio site; conexões só com a API), `X-Frame-Options: DENY` e `frame-ancestors 'none'` (contra clickjacking), `X-Content-Type-Options: nosniff`, `Referrer-Policy` e `Permissions-Policy`. A política foi testada com o fluxo completo da interface, sem violações. |
+| XSS | O React escapa todo o conteúdo; o projeto não usa `innerHTML` nem `dangerouslySetInnerHTML`. O navegador guarda só o id do participante selecionado em "Você é". |
+| Transporte e contêineres | HTTPS em Vercel, Render e Neon. O contêiner do backend roda com usuário sem privilégios, e o nginx não anuncia a versão. |
+
+**Riscos conhecidos (aceitos dentro do escopo do desafio)**
+
+- **Sem autenticação:** qualquer pessoa pode criar, alterar ou excluir dados, inclusive pelo Swagger, e ver as restrições dos inscritos. Ver a ambiguidade 12 e as premissas.
+- **Sem limite de requisições (rate limiting):** quem já conhece um CPF ainda consegue confirmar se ele está cadastrado (pela busca exata ou pelo erro de CPF duplicado), e o servidor gratuito pode ser sobrecarregado.
+- **Alertas em dependências** (`npm audit`): os críticos são do `vitest`, ferramenta de teste que não vai para o site publicado; os moderados do `react-router` exigem links montados a partir de texto do usuário ou renderização no servidor, que o projeto não usa. A correção exige trocar de versão principal e ficou para depois da entrega.
+
+**O que seria feito em produção:** login corporativo (SSO) com papéis, limite de requisições por usuário e IP (na API ou num gateway), registro de auditoria de quem acessa dados pessoais, atualização das dependências e varredura automática de vulnerabilidades (ex.: Dependabot) no CI.
 
 ## Feature livre: “O que falta?”
 
@@ -361,7 +389,7 @@ Documentação interativa completa no **Swagger UI** (`/swagger-ui.html`). Resum
 | GET/POST | `/api/eventos` | Lista (filtro `?status=`) / cria (nasce em RASCUNHO) |
 | GET/PUT/DELETE | `/api/eventos/{id}` | Detalha / edita / exclui (só rascunho) |
 | PATCH | `/api/eventos/{id}/status` | Transição de status |
-| GET/POST/PUT/DELETE | `/api/participantes[/{id}]` | CRUD de participantes (busca `?busca=` por nome ou CPF; a resposta traz só `cpfMascarado` e o `PUT` não altera o CPF) |
+| GET/POST/PUT/DELETE | `/api/participantes[/{id}]` | CRUD de participantes (busca `?busca=` por nome ou CPF completo; a resposta traz só `cpfMascarado` e o `PUT` não altera o CPF) |
 | GET/POST | `/api/eventos/{id}/inscricoes` | Lista / inscreve participante |
 | DELETE | `/api/eventos/{id}/inscricoes/{participanteId}` | Cancela inscrição (remove contribuições da pessoa) |
 | GET/POST/PUT/DELETE | `/api/eventos/{id}/categorias[/{categoriaId}]` | Categorias com meta opcional |
@@ -388,7 +416,7 @@ Exemplo de erro de regra de negócio (`422`):
 
 ## Testes
 
-**Backend: 116 testes** (`./mvnw verify`).
+**Backend: 118 testes** (`./mvnw verify`).
 
 | Tipo | Classes | O que cobrem |
 |---|---|---|
@@ -397,7 +425,7 @@ Exemplo de erro de regra de negócio (`422`):
 | | `ContribuicaoServiceTest` (Mockito) | Limite, inscrição obrigatória, duplicidade, prazo, status, alteração de quantidade |
 | | `CalculadoraCoberturaTest` | Pesos, razão × unidades, metas, metas inatingíveis, arredondamento, "pronto" |
 | | `AnalisadorRestricoesTest` | Agrupamento de restrições, conflitos por item, observações |
-| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o CPF que nunca sai completo nas respostas, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
+| Integração (Spring Boot + Testcontainers + MockMvc) | `EventoIT`, `ParticipanteIT`, `ItemIT`, `ContribuicaoIT`, `CoberturaIT`, `RestricoesIT`, `PendenciaIT`, `DashboardIT`, `MinhasContribuicoesIT` | Fluxos completos via HTTP contra PostgreSQL real, incluindo a consulta nativa, os códigos de erro, o CPF que nunca sai completo nas respostas, a busca que não aceita pedaços do CPF, o teto de quantidades, o avanço do relógio para testar prazos e a **concorrência no limite do item** |
 
 **Frontend: 53 testes** (`npm test`, Vitest + Testing Library): lista "O que falta?" (ordem, bloqueios com motivo, "eu levo" total e parcial), resumo de cobertura, visão geral (indicadores, pendências prioritárias, contribuições recentes e ausência de números inventados sem dados), modal (foco, Esc e regressão do foco ao digitar), capa ilustrativa (rótulo acessível e status), Minhas contribuições (agrupamento e bloqueio após o prazo), selo de status e tempo até o prazo, formulário de participante (máscara, CPF inválido e válido, payload enviado, erro da API) e cliente da API (erro padronizado, 204, API fora do ar).
 
@@ -413,6 +441,7 @@ Exemplo de erro de regra de negócio (`422`):
 - **Verificação da interface:** navegação automatizada (Playwright) pelo fluxo principal para conferir o comportamento real e o layout no celular.
 - **Publicação:** configuração do deploy (Render, Vercel e Neon) e diagnóstico dos problemas que surgiram em produção.
 - **Interface:** refinamento visual a partir de revisões com screenshots. O layout final segue um pacote visual consolidado a partir de protótipos gerados no **Stitch** (ferramenta de design com IA do Google): paleta, tipografia, menu lateral, capas ilustrativas, cards de evento e cabeçalho do evento.
+- **Revisão de segurança:** varredura do código, da configuração, das dependências e do histórico do Git. Encontrou a busca por pedaços do CPF (corrigida) e motivou os cabeçalhos de segurança e o teto de quantidades. Ver [Segurança](#segurança).
 - **Documentação:** rascunho deste README.
 
 **Uma sugestão aceita:** travar o item com lock pessimista (`SELECT ... FOR UPDATE`) antes de validar a soma das contribuições. Aceitei porque a regra "a soma não pode ultrapassar a quantidade necessária" é exatamente o tipo de validação que quebra sob concorrência. Para não aceitar só na teoria, o teste de concorrência foi executado **com e sem o lock**: sem ele, mais contribuições do que o permitido eram aceitas; com ele, exatamente 2 de 4.
