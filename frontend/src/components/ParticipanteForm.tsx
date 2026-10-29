@@ -20,6 +20,7 @@ export function ParticipanteForm({ inicial, onSalvar, onCancelar }: Props) {
   // Na edição o campo mostra o CPF mascarado (desabilitado) e não é validado nem enviado.
   const cpfCompleto = !inicial && somenteDigitos(cpf).length === 11;
   const cpfInvalido = cpfCompleto && !cpfValido(cpf);
+  const cpfOk = cpfCompleto && !cpfInvalido;
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
@@ -54,11 +55,21 @@ export function ParticipanteForm({ inicial, onSalvar, onCancelar }: Props) {
           value={cpf}
           disabled={inicial !== undefined}
           aria-invalid={cpfInvalido}
+          className={cpfOk ? 'campo-valido' : undefined}
           aria-describedby="participante-cpf-ajuda"
           onChange={(e) => setCpf(mascararCpf(e.target.value))}
         />
-        <small id="participante-cpf-ajuda" className={cpfInvalido ? 'texto-erro' : 'texto-suave'}>
-          {cpfInvalido ? 'CPF inválido' : inicial ? 'O CPF identifica o colaborador e não pode ser alterado.' : ''}
+        <small
+          id="participante-cpf-ajuda"
+          className={cpfInvalido ? 'texto-erro' : cpfOk ? 'texto-sucesso' : 'texto-suave'}
+        >
+          {cpfInvalido
+            ? 'CPF inválido'
+            : cpfOk
+              ? 'CPF válido'
+              : inicial
+                ? 'O CPF identifica o colaborador e não pode ser alterado.'
+                : ''}
         </small>
       </div>
       <div className="campo-largo">

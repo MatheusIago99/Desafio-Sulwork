@@ -22,6 +22,7 @@ describe('ParticipanteForm', () => {
 
     await userEvent.type(screen.getByLabelText('Nome'), '  Ana Souza ');
     await userEvent.type(screen.getByLabelText('CPF'), '52998224725');
+    expect(screen.getByText('CPF válido')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Lactose'));
     await userEvent.type(screen.getByLabelText(/Outras restrições/), 'Vegetariana');
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }));
