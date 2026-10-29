@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import type { Dashboard, Participante, ProximoEvento } from '../api/types';
@@ -16,6 +16,7 @@ import {
   IconeRelogio,
   IconeSeta,
 } from '../components/Icones';
+import { Indicador } from '../components/Indicador';
 import { useParticipanteAtual } from '../ParticipanteAtual';
 import { formatarDataHora, formatarQuantidade } from '../utils/format';
 import { iniciais } from '../utils/iniciais';
@@ -252,32 +253,5 @@ function CartaoEvento({ proximo }: { proximo: ProximoEvento }) {
         </Link>
       </div>
     </li>
-  );
-}
-
-function Indicador({
-  rotulo,
-  icone,
-  valor,
-  tom,
-  children,
-}: {
-  rotulo: string;
-  icone: ReactNode;
-  valor: string;
-  tom?: 'aviso' | 'destaque';
-  children: ReactNode;
-}) {
-  return (
-    <div className={`cartao indicador-cartao ${tom ? `indicador-${tom}` : ''}`}>
-      <div className="indicador-topo">
-        <span className="indicador-rotulo">{rotulo}</span>
-        <span className="icone-quadrado" aria-hidden="true">
-          {icone}
-        </span>
-      </div>
-      <span className="indicador-valor">{valor}</span>
-      <div className="indicador-detalhe">{children}</div>
-    </div>
   );
 }

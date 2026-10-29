@@ -1514,8 +1514,8 @@ input[type='checkbox'] {
 }
 
 .link-evento {
-  color: var(--texto);
-  font-weight: 500;
+  color: var(--texto-forte);
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -1561,12 +1561,55 @@ input[type='checkbox'] {
 }
 
 /* Minhas contribuições */
+.grade-com-lateral {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.pilha > * + * {
+  margin-top: 1rem;
+}
+
+.pilha > p:first-child {
+  margin: 0;
+}
+
+.regras h2 {
+  margin: -1.25rem -1.25rem 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.regras p {
+  margin: 0 0 0.85rem;
+  color: var(--texto);
+  font-size: 0.85rem;
+}
+
+.regras p:last-child {
+  margin-bottom: 0;
+}
+
+.regras strong {
+  color: var(--texto-forte);
+}
+
+.grade-indicadores-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .grupo-contribuicoes {
   padding: 0;
   overflow: hidden;
 }
 
 .grupo-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--borda);
 }
@@ -1972,7 +2015,8 @@ input[type='checkbox'] {
    Responsivo
    ========================================================================== */
 @media (max-width: 980px) {
-  .grade-dashboard {
+  .grade-dashboard,
+  .grade-com-lateral {
     grid-template-columns: 1fr;
   }
 }
@@ -2103,7 +2147,8 @@ input[type='checkbox'] {
     grid-template-columns: 1fr;
   }
 
-  .grade-indicadores {
+  .grade-indicadores,
+  .grade-indicadores-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.6rem;
   }

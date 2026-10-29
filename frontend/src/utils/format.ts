@@ -68,6 +68,14 @@ export function formatarDataLonga(iso: string): string {
   return formatoDataLonga.format(new Date(iso));
 }
 
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/** Ex.: "2 nov", para indicadores com pouco espaço. */
+export function formatarDiaMes(iso: string): string {
+  const data = new Date(iso);
+  return `${data.getDate()} ${MESES[data.getMonth()]}`;
+}
+
 /** Ex.: "08:00". */
 export function formatarHora(iso: string): string {
   return formatoHora.format(new Date(iso));

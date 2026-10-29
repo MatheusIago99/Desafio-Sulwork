@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import type { MinhaContribuicao } from '../api/types';
 import { Alerta } from '../components/Alerta';
+import { IconeCaixa, IconeCalendario, IconeRelogio, IconeSeta } from '../components/Icones';
+import { Indicador } from '../components/Indicador';
 import { PrazoRestante } from '../components/PrazoRestante';
 import { StatusBadge } from '../components/StatusBadge';
 import { useParticipanteAtual } from '../ParticipanteAtual';
-import { formatarDataHora, formatarQuantidade } from '../utils/format';
+import { formatarDataHora, formatarDiaMes, formatarHora, formatarQuantidade } from '../utils/format';
 
 interface GrupoEvento {
   eventoId: number;
@@ -79,16 +81,62 @@ export function MinhasContribuicoesPage() {
         </p>
       ) : (
         <>
-          <p className="texto-suave">
-            {lista.length} {lista.length === 1 ? 'item' : 'itens'} em {grupos.length}{' '}
-            {grupos.length === 1 ? 'evento' : 'eventos'}.
-          </p>
-          {grupos.map((grupo) => (
-            <GrupoContribuicoes key={grupo.eventoId} grupo={grupo} executar={executar} />
-          ))}
+          <Resumo lista={lista} grupos={grupos} />
+          <div className="grade-com-lateral">
+            <div className="pilha">
+              <p className="texto-suave">
+                {lista.length} {lista.length === 1 ? 'item' : 'itens'} em {grupos.length}{' '}
+                {grupos.length === 1 ? 'evento' : 'eventos'}.
+              </p>
+              {grupos.map((grupo) => (
+                <GrupoContribuicoes key={grupo.eventoId} grupo={grupo} executar={executar} />
+              ))}
+            </div>
+            <aside className="cartao regras">
+              <h2>Regras de contribuição</h2>
+              <p>
+                <strong>Limite por item.</strong> A soma das contribuições nunca passa da quantidade necessária do item.
+              </p>
+              <p>
+                <strong>Prazo.</strong> Depois do prazo de alterações, ou se o evento não estiver aberto, alterar e
+                remover ficam bloqueados.
+              </p>
+              <p>
+                <strong>Inscrição.</strong> Cancelar a inscrição num evento remove junto as suas contribuições nele.
+              </p>
+            </aside>
+          </div>
         </>
       )}
     </div>
+  );
+}
+
+/** Indicadores do topo: só contagens e o prazo vindos das próprias contribuições. */
+function Resumo({ lista, grupos }: { lista: MinhaContribuicao[]; grupos: GrupoEvento[] }) {
+  const abertos = grupos.filter((g) => g.contribuicoes[0].aceitaAlteracoes);
+  const proximoPrazo = abertos
+    .map((g) => g.contribuicoes[0].prazoAlteracoes)
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0];
+  return (
+    <section className="grade-indicadores grade-indicadores-3" aria-label="Resumo">
+      <Indicador rotulo="Itens" icone={<IconeCaixa />} valor={String(lista.length)}>
+        <span className="texto-suave">{lista.length === 1 ? 'comprometido' : 'comprometidos'}</span>
+      </Indicador>
+      <Indicador rotulo="Eventos" icone={<IconeCalendario />} valor={String(grupos.length)}>
+        <span className="texto-suave">
+          {abertos.length} {abertos.length === 1 ? 'aceita' : 'aceitam'} alterações
+        </span>
+      </Indicador>
+      <Indicador
+        rotulo="Prazo mais próximo"
+        icone={<IconeRelogio />}
+        valor={proximoPrazo ? `${formatarDiaMes(proximoPrazo)}, ${formatarHora(proximoPrazo)}` : '—'}
+        tom={proximoPrazo ? 'aviso' : undefined}
+      >
+        {proximoPrazo ? <PrazoRestante prazo={proximoPrazo} /> : <span className="texto-suave">Nenhum prazo aberto</span>}
+      </Indicador>
+    </section>
   );
 }
 
@@ -117,6 +165,9 @@ function GrupoContribuicoes({
             {formatarDataHora(evento.eventoDataHora)} · alterações até {formatarDataHora(evento.prazoAlteracoes)}
           </p>
         </div>
+        <Link to={`/eventos/${evento.eventoId}`} className="cartao-evento-acao">
+          Ver evento <IconeSeta />
+        </Link>
       </div>
       {!evento.aceitaAlteracoes && (
         <p className="grupo-bloqueado texto-pequeno">
