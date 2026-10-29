@@ -2,44 +2,53 @@
    Tokens
    ========================================================================== */
 :root {
-  --fundo: #f6f8f8;
+  /* Identidade Sulwork (pacote visual v1.1) */
+  --marinho: #06143b;
+  --marca: #4779f5; /* só em elementos sem texto por cima: barras, ícones, foco */
+
+  --fundo: #f5f7fb;
   --superficie: #ffffff;
-  --superficie-alt: #f8fafa;
-  --borda: #dfe6e8;
-  --borda-forte: #c0c8c9;
+  --superficie-alt: #fafbfe;
+  --cinza-claro: #eef1f5;
+  --borda: #e1e7f0;
+  --borda-forte: #c7ced8;
 
-  --texto: #1d292d;
-  --texto-suave: #647278;
-  --texto-fraco: #8d999e;
+  --texto-forte: #06143b;
+  --texto: #334063;
+  --texto-suave: #5e6a85;
+  --texto-fraco: #98a2b8;
 
-  --primario: #133e43;
-  --primario-hover: #1a5258;
-  --acento: #287a78;
-  --acento-hover: #1f6361;
-  --acento-claro: #e6f4f3;
+  /* Fundo de botão: #4779f5 com texto branco dá 3,95:1 (abaixo do AA); #3366e6 dá 5,0:1 */
+  --primario: #3366e6;
+  --primario-hover: #2a57c9;
+  --acento: #2f5fd8; /* azul para texto e links sobre branco (5,6:1) */
+  --acento-hover: #2a57c9;
+  --acento-claro: #eaf0ff;
 
-  --sucesso: #21845b;
-  --sucesso-claro: #e9f5ef;
-  --aviso: #a86612;
-  --aviso-claro: #fbf3e7;
-  --erro: #c44242;
-  --erro-claro: #fbeded;
-  --info: #2f5bb7;
-  --info-claro: #edf2fc;
+  --sucesso: #16794c;
+  --sucesso-claro: #e7f5ee;
+  --aviso: #9a5b00;
+  --aviso-claro: #fff4e0;
+  --erro: #c0352b;
+  --erro-claro: #fdecea;
+  --info: #2f5fd8;
+  --info-claro: #eaf0ff;
 
-  --lateral: #ffffff;
-  --lateral-hover: #f2f4f4;
-  --lateral-ativo: #133e43;
-  --lateral-texto: #4a575c;
+  --lateral: #06143b;
+  --lateral-hover: rgb(255 255 255 / 0.06);
+  --lateral-ativo: #3366e6;
+  --lateral-texto: #c9d3ea;
 
   --raio: 8px;
   --raio-cartao: 12px;
-  --sombra: 0 1px 2px rgb(29 41 45 / 0.04);
-  --fonte-titulo: 'Hanken Grotesk', 'Inter', system-ui, sans-serif;
+  --sombra: 0 1px 2px rgb(6 20 59 / 0.05);
+  --sombra-media: 0 4px 12px rgb(6 20 59 / 0.08);
+  --fonte-titulo: 'Inter', system-ui, sans-serif;
 
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.45;
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
   color: var(--texto);
   background: var(--fundo);
   -webkit-font-smoothing: antialiased;
@@ -62,11 +71,12 @@ h3 {
   letter-spacing: -0.015em;
   font-weight: 600;
   line-height: 1.3;
-  color: var(--texto);
+  color: var(--texto-forte);
 }
 
 h1 {
   font-size: 1.75rem;
+  font-weight: 700;
 }
 
 h2 {
@@ -79,6 +89,10 @@ h3 {
 
 a {
   color: var(--acento);
+}
+
+a:hover {
+  color: var(--acento-hover);
 }
 
 /* ==========================================================================
@@ -123,7 +137,7 @@ a {
   height: 1.75rem;
   border-radius: var(--raio);
   background: var(--primario);
-  color: #a0edea;
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -216,7 +230,7 @@ a {
 .avatar-pequeno {
   width: 1.75rem;
   height: 1.75rem;
-  background: #e8eaee;
+  background: var(--cinza-claro);
   color: var(--texto-suave);
   font-size: 0.7rem;
 }
@@ -350,7 +364,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: none;
   border-color: var(--acento);
-  box-shadow: 0 0 0 3px rgb(40 122 120 / 0.18);
+  box-shadow: 0 0 0 3px rgb(71 121 245 / 0.28);
 }
 
 button:focus-visible,
@@ -604,7 +618,7 @@ input[type='checkbox'] {
 
 .botao-perigo:hover:not(:disabled) {
   background: var(--erro-claro);
-  border-color: #e7b4af;
+  border-color: #f1b9b4;
 }
 
 .botao-pequeno {
@@ -641,15 +655,15 @@ input[type='checkbox'] {
   font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
-  background: #eef0f3;
+  background: var(--cinza-claro);
   color: var(--texto-suave);
 }
 
 .badge-status-rascunho,
 .badge-prioridade-baixa,
 .badge-neutro {
-  background: #eef0f3;
-  color: #4b525c;
+  background: var(--cinza-claro);
+  color: #45506b;
 }
 
 .badge-status-aberto,
@@ -686,7 +700,7 @@ input[type='checkbox'] {
 }
 
 .prazo-restante-urgente {
-  border-color: #f1c7c3;
+  border-color: #f5c3be;
   background: var(--erro-claro);
   color: var(--erro);
 }
@@ -735,26 +749,26 @@ input[type='checkbox'] {
 
 .alerta-erro {
   background: var(--erro-claro);
-  border-color: #f1c7c3;
+  border-color: #f5c3be;
   color: var(--erro);
 }
 
 .alerta-aviso {
   background: var(--aviso-claro);
-  border-color: #eedca9;
-  color: #7a4e00;
+  border-color: #f6d9a6;
+  color: #6e4100;
 }
 
 .alerta-info {
   background: var(--info-claro);
-  border-color: #cfdaf3;
-  color: var(--info);
+  border-color: #c9d8fd;
+  color: #1f3f8f;
 }
 
 .alerta-sucesso {
   background: var(--sucesso-claro);
-  border-color: #c6e3d0;
-  color: var(--sucesso);
+  border-color: #bfe3cf;
+  color: #0f5a37;
 }
 
 /* ==========================================================================
@@ -763,7 +777,7 @@ input[type='checkbox'] {
 .progresso {
   height: 6px;
   border-radius: 3px;
-  background: #e9ecef;
+  background: var(--cinza-claro);
   overflow: hidden;
 }
 
@@ -803,7 +817,7 @@ input[type='checkbox'] {
 }
 
 .anel-trilho {
-  stroke: #e9ecef;
+  stroke: var(--cinza-claro);
 }
 
 .anel-baixo .anel-valor,
@@ -979,7 +993,7 @@ input[type='checkbox'] {
   margin-left: 0.4rem;
   padding: 0 0.4rem;
   border-radius: 4px;
-  background: #eef0f3;
+  background: var(--cinza-claro);
   color: var(--texto-suave);
   font-size: 0.75rem;
   font-weight: 600;
@@ -1029,7 +1043,7 @@ input[type='checkbox'] {
 }
 
 .pendencia-media {
-  border-left-color: #d9a21b;
+  border-left-color: #e59a1a;
 }
 
 .pendencia-cabecalho {
@@ -1180,7 +1194,7 @@ input[type='checkbox'] {
   padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--borda);
   background: var(--aviso-claro);
-  color: #7a4e00;
+  color: #6e4100;
 }
 
 .tabela-rolagem {
@@ -1201,7 +1215,7 @@ input[type='checkbox'] {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgb(15 18 22 / 0.5);
+  background: rgb(6 20 59 / 0.45);
 }
 
 .modal {
@@ -1212,7 +1226,7 @@ input[type='checkbox'] {
   padding: 1.25rem 1.5rem 1.5rem;
   background: var(--superficie);
   border-radius: var(--raio-cartao);
-  box-shadow: 0 12px 32px rgb(15 18 22 / 0.2);
+  box-shadow: 0 16px 40px -8px rgb(6 20 59 / 0.22);
 }
 
 .modal-largo {
