@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import type { Alergeno, Categoria, Item } from '../../api/types';
 import { AlergenoChips, SeletorAlergenos } from '../../components/Alergenos';
 import { BarraProgresso } from '../../components/BarraProgresso';
+import { Modal } from '../../components/Modal';
 import { formatarQuantidade } from '../../utils/format';
 import type { DadosEvento, Executar } from './contexto';
 
@@ -18,14 +19,17 @@ export function AbaItens({ dados, executar }: { dados: DadosEvento; executar: Ex
         <p className="vazio">Crie uma categoria (ex.: Bebidas, Salgados) para começar a cadastrar itens.</p>
       )}
 
-      {podeOrganizar && categorias.length > 0 && itemEditando === null && (
+      {podeOrganizar && categorias.length > 0 && (
         <button type="button" className="botao botao-primario" onClick={() => setItemEditando('novo')}>
           Novo item
         </button>
       )}
       {itemEditando !== null && (
-        <section className="cartao">
-          <h3>{itemEditando === 'novo' ? 'Novo item' : `Editar ${itemEditando.nome}`}</h3>
+        <Modal
+          titulo={itemEditando === 'novo' ? 'Novo item' : `Editar ${itemEditando.nome}`}
+          onFechar={() => setItemEditando(null)}
+          lateral
+        >
           <FormItem
             key={itemEditando === 'novo' ? 'novo' : itemEditando.id}
             eventoId={evento.id}
@@ -34,7 +38,7 @@ export function AbaItens({ dados, executar }: { dados: DadosEvento; executar: Ex
             executar={executar}
             onFim={() => setItemEditando(null)}
           />
-        </section>
+        </Modal>
       )}
 
       {categorias.map((categoria) => {
@@ -239,6 +243,7 @@ function FormItem({
   const [unidade, setUnidade] = useState(inicial?.unidade ?? '');
   const [obrigatorio, setObrigatorio] = useState(inicial?.obrigatorio ?? true);
   const [alergenos, setAlergenos] = useState<Alergeno[]>(inicial?.alergenos ?? []);
+  const [erro, setErro] = useState<string | null>(null);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
@@ -250,11 +255,15 @@ function FormItem({
       obrigatorio,
       alergenos,
     };
-    const ok = await executar(
-      () => (inicial ? api.itens.atualizar(eventoId, inicial.id, dados) : api.itens.criar(eventoId, dados)),
-      inicial ? 'Item atualizado.' : 'Item criado.',
-    );
-    if (ok) onFim();
+    // O erro aparece dentro do painel: o aviso da página fica atrás do fundo escurecido.
+    try {
+      await (inicial ? api.itens.atualizar(eventoId, inicial.id, dados) : api.itens.criar(eventoId, dados));
+    } catch (ex) {
+      setErro(ex instanceof Error ? ex.message : 'Erro inesperado');
+      return;
+    }
+    await executar(async () => {}, inicial ? 'Item atualizado.' : 'Item criado.');
+    onFim();
   };
 
   return (
@@ -288,6 +297,11 @@ function FormItem({
       <div className="campo-largo">
         <SeletorAlergenos legenda="Alérgenos que o item contém" selecionados={alergenos} onChange={setAlergenos} />
       </div>
+      {erro && (
+        <p className="texto-erro campo-largo" role="alert">
+          {erro}
+        </p>
+      )}
       <div className="acoes campo-largo">
         <button type="submit" className="botao botao-primario">
           {inicial ? 'Salvar item' : 'Adicionar item'}

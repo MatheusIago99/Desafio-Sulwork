@@ -234,11 +234,12 @@ a:hover {
 }
 
 .avatar-pequeno {
-  width: 1.75rem;
-  height: 1.75rem;
-  background: var(--cinza-claro);
-  color: var(--texto-suave);
-  font-size: 0.7rem;
+  width: 2rem;
+  height: 2rem;
+  background: var(--acento-claro);
+  color: var(--acento);
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .pessoa {
@@ -1615,6 +1616,18 @@ input[type='checkbox'] {
 
 .modal-largo {
   max-width: 680px;
+}
+
+.modal-fundo-lateral {
+  place-items: stretch end;
+  padding: 0;
+}
+
+.modal-lateral {
+  max-width: 520px;
+  height: 100vh;
+  max-height: none;
+  border-radius: 0;
 }
 
 .modal-cabecalho {

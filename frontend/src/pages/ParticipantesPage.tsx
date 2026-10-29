@@ -6,7 +6,7 @@ import { AlergenoChips } from '../components/Alergenos';
 import { IconeBusca, IconeMais } from '../components/Icones';
 import { Modal } from '../components/Modal';
 import { ParticipanteForm } from '../components/ParticipanteForm';
-import { iniciais } from '../utils/iniciais';
+import { Pessoa } from '../components/Pessoa';
 
 export function ParticipantesPage() {
   const [participantes, setParticipantes] = useState<Participante[] | null>(null);
@@ -110,12 +110,7 @@ export function ParticipantesPage() {
               {participantes.map((p) => (
                 <tr key={p.id}>
                   <td>
-                    <span className="pessoa">
-                      <span className="avatar avatar-pequeno" aria-hidden="true">
-                        {iniciais(p.nome)}
-                      </span>
-                      <strong>{p.nome}</strong>
-                    </span>
+                    <Pessoa nome={p.nome} destaque />
                   </td>
                   <td className="nowrap">{p.cpfMascarado}</td>
                   <td>

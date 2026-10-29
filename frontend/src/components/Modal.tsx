@@ -6,6 +6,8 @@ interface Props {
   onFechar: () => void;
   children: ReactNode;
   largo?: boolean;
+  /** Painel encostado à direita, para formulários longos (ex.: item do evento). */
+  lateral?: boolean;
 }
 
 /**
@@ -13,7 +15,7 @@ interface Props {
  * É renderizada no body (portal) para o fundo cobrir a tela inteira, mesmo que algum
  * ancestro crie um novo contexto de posicionamento.
  */
-export function Modal({ titulo, onFechar, children, largo }: Props) {
+export function Modal({ titulo, onFechar, children, largo, lateral }: Props) {
   const painel = useRef<HTMLDivElement>(null);
   // Guardado em ref: quem usa o modal costuma passar uma função nova a cada render, e o
   // efeito abaixo deve rodar só ao abrir (senão o foco voltaria ao primeiro campo a cada tecla).
@@ -34,10 +36,10 @@ export function Modal({ titulo, onFechar, children, largo }: Props) {
   }, []);
 
   return createPortal(
-    <div className="modal-fundo" onMouseDown={(e) => e.target === e.currentTarget && onFechar()}>
+    <div className={`modal-fundo ${lateral ? 'modal-fundo-lateral' : ''}`} onMouseDown={(e) => e.target === e.currentTarget && onFechar()}>
       <div
         ref={painel}
-        className={`modal ${largo ? 'modal-largo' : ''}`}
+        className={`modal ${largo ? 'modal-largo' : ''} ${lateral ? 'modal-lateral' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-titulo"

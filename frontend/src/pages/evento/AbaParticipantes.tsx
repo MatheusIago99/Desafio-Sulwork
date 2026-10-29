@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { api } from '../../api/client';
 import { AlergenoChips } from '../../components/Alergenos';
+import { Pessoa } from '../../components/Pessoa';
 import type { DadosEvento, Executar } from './contexto';
 
 export function AbaParticipantes({ dados, executar }: { dados: DadosEvento; executar: Executar }) {
@@ -50,7 +51,9 @@ export function AbaParticipantes({ dados, executar }: { dados: DadosEvento; exec
             <tbody>
               {inscricoes.map(({ participante }) => (
                 <tr key={participante.id}>
-                  <td>{participante.nome}</td>
+                  <td>
+                    <Pessoa nome={participante.nome} />
+                  </td>
                   <td>
                     <AlergenoChips
                       alergenos={participante.restricoes}

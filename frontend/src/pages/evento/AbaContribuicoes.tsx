@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { api } from '../../api/client';
 import type { Contribuicao } from '../../api/types';
+import { Pessoa } from '../../components/Pessoa';
 import { formatarQuantidade } from '../../utils/format';
 import type { DadosEvento, Executar } from './contexto';
 
@@ -126,7 +127,9 @@ function LinhaContribuicao({
 
   return (
     <tr>
-      <td>{contribuicao.participanteNome}</td>
+      <td>
+        <Pessoa nome={contribuicao.participanteNome} />
+      </td>
       <td>{contribuicao.itemNome}</td>
       <td>
         {editando ? (
