@@ -94,3 +94,52 @@ export const IconeCaixa = () => (
     <path d="M3.5 7.5 12 12l8.5-4.5M12 12v9" />
   </svg>
 );
+
+export const IconeAmpulheta = () => (
+  <svg {...base}>
+    <path d="M6.5 3h11M6.5 21h11" />
+    <path d="M7.5 3c0 4.5 4.5 5.5 4.5 9s-4.5 4.5-4.5 9M16.5 3c0 4.5-4.5 5.5-4.5 9s4.5 4.5 4.5 9" />
+  </svg>
+);
+
+/* Ícones dos tipos de evento, usados grandes nas capas ilustrativas */
+type PropsTamanho = { tamanho?: number };
+const grande = (tamanho = 18) => ({ ...base, width: tamanho, height: tamanho, strokeWidth: tamanho > 30 ? 1.2 : 1.8 });
+
+export const IconeXicara = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z" />
+    <path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.9.6 1.6 0 2.5M12 3.5c-.6.9.6 1.6 0 2.5M3 21.5h14" />
+  </svg>
+);
+
+export const IconeTalheres = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="M6 3v6a2 2 0 0 0 4 0V3M8 11v10M17 21V3c-2 1.5-3 4-3 7v3h3" />
+  </svg>
+);
+
+export const IconeLanche = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="M4 11a8 6 0 0 1 16 0H4Z" />
+    <path d="M3.5 14h17M5 17h14a1 1 0 0 1 0 2.5H5A1 1 0 0 1 5 17Z" />
+  </svg>
+);
+
+export const IconeChama = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="M12 21.5c-3.9 0-6.5-2.7-6.5-6.2 0-3.9 3.3-5.6 3.8-9.8 2.6 1.6 4 3.8 4.2 6 .9-.6 1.5-1.6 1.7-2.8 1.9 1.8 3.3 4.2 3.3 6.6 0 3.5-2.6 6.2-6.5 6.2Z" />
+  </svg>
+);
+
+export const IconeTacas = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="M5 3h5l-.5 5a2 2 0 0 1-4 0L5 3ZM7.5 10v8M5 21h5M14 3h5l.5 5a2 2 0 0 1-4 0L14 3ZM16.5 10v8M14 21h5" />
+  </svg>
+);
+
+export const IconeEstrela = ({ tamanho }: PropsTamanho) => (
+  <svg {...grande(tamanho)}>
+    <path d="m12 3 2.7 5.6 6.1.8-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.8L12 3Z" />
+  </svg>
+);

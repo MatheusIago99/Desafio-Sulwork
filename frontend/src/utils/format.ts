@@ -60,15 +60,6 @@ export function formatarDataHora(iso: string): string {
   return formatoDataHora.format(new Date(iso));
 }
 
-/** Dia e mês abreviado, para o bloco de data dos cartões (ex.: { dia: '03', mes: 'nov' }). */
-export function partesData(iso: string): { dia: string; mes: string } {
-  const data = new Date(iso);
-  return {
-    dia: String(data.getDate()).padStart(2, '0'),
-    mes: data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
-  };
-}
-
 /** Converte o valor da API para o formato aceito por <input type="datetime-local">. */
 export function paraInputDataHora(iso: string): string {
   return iso.slice(0, 16);

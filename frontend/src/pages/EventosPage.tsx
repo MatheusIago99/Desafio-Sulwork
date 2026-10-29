@@ -4,11 +4,11 @@ import { api } from '../api/client';
 import type { Evento, EventoInput, StatusEvento, TipoEvento } from '../api/types';
 import { Alerta } from '../components/Alerta';
 import { EventoForm } from '../components/EventoForm';
-import { IconeBusca, IconeMais, IconeSeta } from '../components/Icones';
+import { CaixaPrazo } from '../components/CaixaPrazo';
+import { CapaEvento } from '../components/CapaEvento';
+import { IconeBusca, IconeCalendario, IconeMais, IconeSeta } from '../components/Icones';
 import { Modal } from '../components/Modal';
-import { PrazoRestante } from '../components/PrazoRestante';
-import { StatusBadge } from '../components/StatusBadge';
-import { TIPO_LABEL, formatarDataHora, partesData } from '../utils/format';
+import { TIPO_LABEL, formatarDataHora } from '../utils/format';
 
 const ABAS_STATUS: { valor: StatusEvento | ''; rotulo: string }[] = [
   { valor: '', rotulo: 'Todos' },
@@ -127,56 +127,29 @@ export function EventosPage() {
       )}
 
       {filtrados.length > 0 && (
-        <div className="tabela-container">
-          <table className="tabela tabela-eventos">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Evento</th>
-                <th>Tipo</th>
-                <th>Status</th>
-                <th>Alterações até</th>
-                <th aria-label="Abrir" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((evento) => {
-                const data = partesData(evento.dataHora);
-                return (
-                  <tr key={evento.id} className="linha-clicavel" onClick={() => navigate(`/eventos/${evento.id}`)}>
-                    <td>
-                      <span className="evento-data evento-data-claro" aria-hidden="true">
-                        <strong>{data.dia}</strong>
-                        <span>{data.mes}</span>
-                      </span>
-                    </td>
-                    <td>
-                      <Link to={`/eventos/${evento.id}`} className="link-evento" onClick={(e) => e.stopPropagation()}>
-                        {evento.nome}
-                      </Link>
-                      <div className="texto-suave texto-pequeno">{formatarDataHora(evento.dataHora)}</div>
-                    </td>
-                    <td className="nowrap">{TIPO_LABEL[evento.tipo]}</td>
-                    <td>
-                      <StatusBadge status={evento.status} prazoVencido={evento.prazoVencido} />
-                    </td>
-                    <td className="texto-suave texto-pequeno">
-                      {formatarDataHora(evento.prazoAlteracoes)}
-                      {evento.aceitaAlteracoes && (
-                        <div>
-                          <PrazoRestante prazo={evento.prazoAlteracoes} />
-                        </div>
-                      )}
-                    </td>
-                    <td className="acoes-tabela texto-suave">
-                      <IconeSeta />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ul className="grade-eventos">
+          {filtrados.map((evento) => (
+            <li key={evento.id} className="cartao cartao-evento">
+              <CapaEvento tipo={evento.tipo} status={evento.status} prazoVencido={evento.prazoVencido}>
+                <span>
+                  <IconeCalendario /> {formatarDataHora(evento.dataHora)}
+                </span>
+              </CapaEvento>
+              <div className="cartao-evento-conteudo">
+                <div>
+                  <h3>
+                    <Link to={`/eventos/${evento.id}`}>{evento.nome}</Link>
+                  </h3>
+                  {evento.descricao && <p className="cartao-evento-descricao">{evento.descricao}</p>}
+                </div>
+                <CaixaPrazo evento={evento} />
+                <span className="cartao-evento-acao" aria-hidden="true">
+                  Ver evento <IconeSeta />
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
